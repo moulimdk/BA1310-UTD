@@ -409,14 +409,14 @@ const RATIOS = [
     def:'Measures ability to pay short-term obligations with short-term assets. A ratio above 1.5–2× is generally healthy.',
     inv:'Low current ratio signals liquidity risk — could disrupt operations.',
     bank:'Key short-term solvency indicator — lenders want to see ≥ 1.5×.',
-    mgr:'Guides working capital decisions — too high means idle cash, too low is risky.',
+    mgr:'Working-capital health — a target with low current ratio means scrambling to pay suppliers from day one of integration.',
     lines:{is:[],bs:['current_assets','cl'],cf:[]} },
 
   { id:'quick_ratio',     name:'Quick ratio',           formula:'(Cash + AR) / Current Liabilities',      category:'liquidity', pct:false, hb:true,  persp:['bank'],
     def:'Like the current ratio but excludes inventory (which can be slow to convert). A stricter test of immediate liquidity.',
     inv:'Rapid-fire test of whether the firm can meet near-term obligations without selling inventory.',
     bank:'More conservative than current ratio — preferred when inventory is illiquid.',
-    mgr:'Warning signal if below 1× — may struggle to pay suppliers on time.',
+    mgr:'Below 1× means inheriting an immediate cash crunch — supplier relationships and payroll become first-100-days problems.',
     lines:{is:[],bs:['cash','ar','cl'],cf:[]} },
 
   // ── DEBT UTILIZATION ──
@@ -694,7 +694,7 @@ function renderPerspCards() {
     { id:'bank', cls:'bank', icon:'%', title:'Bank Advisor',     sub:'Solvency & coverage — can this target service the acquisition financing?',
       ratioIds:['current_ratio','quick_ratio','debt_ratio','interest_coverage','receivables_turnover'] },
     { id:'mgr',  cls:'mgr',  icon:'⚙', title:'Integration Officer', sub:'Efficiency & operations — how cleanly will this target integrate?',
-      ratioIds:['roa','asset_turnover','inventory_turnover','receivables_turnover','net_margin'] },
+      ratioIds:['roa','asset_turnover','inventory_turnover','receivables_turnover','net_margin','current_ratio','quick_ratio'] },
   ];
 
   const grid = document.getElementById('persp-grid');
