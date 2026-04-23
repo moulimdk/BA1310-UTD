@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Ratio Analysis — BA 1310</title>
+<style>
+:root {
+  --bg: #fafaf7;
+  --surface: #ffffff;
+  --surface-2: #f1efe8;
+  --text: #1a1a1a;
+  --text-2: #5f5e5a;
+  --text-3: #9e9c96;
+  --border: rgba(0,0,0,0.11);
+  --border-2: rgba(0,0,0,0.22);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --inv: #993556; --inv-bg: #FBEAF0; --inv-text: #72243E;   /* pink — Investor */
+  --bank: #993C1D; --bank-bg: #FAECE7; --bank-text: #712B13; /* coral — Banker  */
+  --mgr: #1D9E75; --mgr-bg: #E1F5EE; --mgr-text: #085041;   /* teal  — Manager */
+  --highlight: #FFFBCC;
+  --sidebar-w: 420px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1c1a; --surface: #252523; --surface-2: #2e2e2b;
+    --text: #f0ede6; --text-2: #a8a59e; --text-3: #6b6966;
+    --border: rgba(255,255,255,0.09); --border-2: rgba(255,255,255,0.2);
+    --highlight: #3a3600;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.6; }
+
+/* ── Layout ── */
+.page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+h1 { font-size: 24px; font-weight: 500; letter-spacing: -0.01em; margin-bottom: 4px; }
+.subtitle { font-size: 14px; color: var(--text-2); margin-bottom: 2rem; }
+
+/* ── Mode tabs ── */
+.mode-tabs { display: flex; gap: 0; border-bottom: 0.5px solid var(--border-2); margin-bottom: 2rem; }
+.mtab { background: none; border: none; cursor: pointer; padding: 10px 24px; font-size: 15px; font-weight: 500; color: var(--text-2); border-bottom: 2px solid transparent; margin-bottom: -0.5px; }
+.mtab.active { color: var(--text); border-bottom-color: var(--text); }
+
+/* ── Section ── */
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── Project toggle tabs ── */
+.proj-row { display: flex; gap: 8px; margin-bottom: 1rem; align-items: center; flex-wrap: wrap; }
+.ptab { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 8px 20px; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text-2); }
+.ptab:hover { color: var(--text); }
+.ptab.active { background: var(--surface); color: var(--text); border-color: var(--border-2); }
+
+/* ── Main grid with sidebar ── */
+.main-area { display: flex; gap: 0; position: relative; }
+.content-area { flex: 1; min-width: 0; }
+.sidebar {
+  width: var(--sidebar-w); flex-shrink: 0;
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px;
+  margin-left: 16px; align-self: flex-start;
+  position: sticky; top: 16px; max-height: 90vh; overflow-y: auto;
+  display: none;
+}
+.sidebar.open { display: block; }
+.sidebar h3 { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 14px; border-bottom: 0.5px solid var(--border); padding-bottom: 10px; }
+.close-sidebar { float: right; background: none; border: none; cursor: pointer; color: var(--text-2); font-size: 20px; line-height: 1; }
+
+/* ── Financial statements in sidebar ── */
+.fs-section { margin-bottom: 18px; }
+.fs-section h4 { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+.fs-line { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 0.5px solid var(--border); font-size: 14px; }
+.fs-line:last-child { border-bottom: none; }
+.fs-line .lname { color: var(--text-2); flex: 1; }
+.fs-line .lval { font-weight: 500; color: var(--text); min-width: 80px; text-align: right; }
+.fs-line.total { font-weight: 500; }
+.fs-line.total .lname { color: var(--text); }
+.fs-indicator { display: flex; gap: 3px; flex-shrink: 0; margin-right: 6px; }
+.fs-dot { width: 7px; height: 7px; border-radius: 50%; opacity: 0; transition: opacity 0.2s; }
+.fs-dot.visible { opacity: 1; }
+
+/* ── Ratio table ── */
+.ratio-table-wrap { margin-bottom: 2rem; }
+.rt-heading-row { display: flex; align-items: baseline; gap: 14px; margin-bottom: 12px; flex-wrap: wrap; }
+.ratio-table-wrap h3 { font-size: 17px; font-weight: 500; margin-bottom: 0; }
+.rt-hint { font-size: 13px; color: var(--text-3); }
+
+.ratio-controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.ratio-cat-group { display: flex; flex-direction: column; gap: 6px; }
+.ratio-cat-label { display: flex; align-items: baseline; gap: 8px; font-size: 12px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+.ratio-cat-label .cat-name { color: var(--text-2); }
+.cat-toggle-all { font-size: 10px; padding: 1px 7px; border-radius: 10px; border: 0.5px solid var(--border); background: transparent; color: var(--text-3); cursor: pointer; text-transform: lowercase; letter-spacing: 0; }
+.cat-toggle-all:hover { color: var(--text); border-color: var(--border-2); }
+.ratio-cat-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.ratio-toggle { display: flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 20px; border: 0.5px solid var(--border-2); font-size: 13px; cursor: pointer; background: var(--surface); color: var(--text-2); transition: all 0.15s; user-select: none; }
+.ratio-toggle.on { color: var(--text); border-color: transparent; }
+.ratio-toggle .rt-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+.legend-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.bulk-btns { display: flex; gap: 6px; flex-shrink: 0; }
+.bulk-btn { padding: 6px 14px; border-radius: 20px; border: 0.5px solid var(--border-2); font-size: 13px; cursor: pointer; background: var(--surface); color: var(--text-2); font-weight: 500; transition: all 0.15s; }
+.bulk-btn:hover { color: var(--text); background: var(--surface-2); }
+
+.fs-legend { display: flex; gap: 18px; font-size: 13px; color: var(--text-2); }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+table.rt { width: 100%; border-collapse: collapse; font-size: 15px; margin-bottom: 1rem; }
+table.rt th { font-size: 14px; font-weight: 600; color: var(--text); text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--border-2); background: var(--surface-2); }
+table.rt th.proj { text-align: right; min-width: 95px; }
+table.rt td { padding: 10px 10px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+table.rt td.rname { color: var(--text); }
+table.rt td.rval { text-align: right; font-weight: 500; min-width: 95px; }
+table.rt td.rval .badge { font-size: 11px; padding: 1px 6px; border-radius: 3px; margin-left: 4px; font-weight: 500; }
+table.rt tr.cat-header td { background: var(--bg); color: var(--text-2); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; padding: 14px 10px 6px; border-bottom: 0.5px solid var(--border); }
+table.persp-table tr.pt-cat-row td { background: var(--bg); color: var(--text-2); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; padding: 12px 16px 5px; border-bottom: 0.5px solid var(--border); }
+.badge-best { background: #EAF3DE; color: #27500A; }
+.badge-worst { background: #FCEBEB; color: #791F1F; }
+.badge-mid { background: #FAEEDA; color: #633806; }
+table.rt tr.hidden-row { display: none; }
+
+/* Tooltip */
+.rname-wrap { display: flex; align-items: center; gap: 6px; }
+.rname-wrap .formula { font-size: 12px; color: var(--text-3); font-family: "SF Mono", monospace; }
+.def-btn { width: 17px; height: 17px; border-radius: 50%; background: var(--surface-2); border: 0.5px solid var(--border-2); color: var(--text-3); font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tooltip-box { display: none; position: absolute; z-index: 100; background: var(--surface); border: 0.5px solid var(--border-2); border-radius: var(--radius); padding: 12px 14px; font-size: 13px; color: var(--text-2); max-width: 320px; line-height: 1.6; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+
+/* ── Perspective tables (stacked) ── */
+.persp-stack { display: flex; flex-direction: column; gap: 18px; margin-top: 1rem; }
+.persp-card { border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); }
+.persp-head { padding: 12px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--border); }
+.persp-icon { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+.persp-card.inv .persp-icon { background: var(--inv-bg); color: var(--inv-text); }
+.persp-card.bank .persp-icon { background: var(--bank-bg); color: var(--bank-text); }
+.persp-card.mgr .persp-icon { background: var(--mgr-bg); color: var(--mgr-text); }
+.persp-head-text .pt { font-size: 16px; font-weight: 500; }
+.persp-head-text .ps { font-size: 13px; color: var(--text-2); }
+
+table.persp-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+table.persp-table th { font-size: 14px; font-weight: 600; color: var(--text); text-align: left; padding: 11px 16px; background: var(--surface-2); border-bottom: 1px solid var(--border-2); }
+table.persp-table th.proj { text-align: right; min-width: 95px; }
+table.persp-table td { padding: 14px 16px; border-bottom: 0.5px solid var(--border); vertical-align: top; }
+table.persp-table tr:last-child td { border-bottom: none; }
+table.persp-table .pt-name { font-weight: 500; color: var(--text); margin-bottom: 4px; font-size: 15px; }
+table.persp-table .pt-formula { font-family: "SF Mono", monospace; font-size: 12px; color: var(--text-3); margin-bottom: 8px; }
+table.persp-table .pt-def { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+table.persp-table td.pt-val { text-align: right; font-weight: 500; font-size: 15px; min-width: 95px; vertical-align: middle; }
+table.persp-table tr.empty-row td { text-align: center; color: var(--text-3); font-size: 13px; padding: 20px; font-style: italic; }
+
+/* ── Walkthrough mode ── */
+.scenario-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.scen-label { font-size: 13px; color: var(--text-2); font-weight: 500; }
+.scen-picker { display: flex; flex-wrap: wrap; gap: 6px; }
+.scen-btn { background: var(--surface); border: 0.5px solid var(--border-2); border-radius: var(--radius); padding: 6px 13px; font-size: 13px; cursor: pointer; color: var(--text-2); font-weight: 500; transition: all 0.15s; }
+.scen-btn:hover { color: var(--text); background: var(--surface-2); }
+.scen-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+.wt-ratio-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 12px; flex-wrap: wrap; }
+.wt-ratio-header h3 { margin-bottom: 0; }
+.txn-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; }
+@media (max-width: 750px) { .txn-layout { grid-template-columns: 1fr; } }
+.txn-list { }
+.txn-item { border: 0.5px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; overflow: hidden; cursor: pointer; transition: all 0.15s; background: var(--surface); }
+.txn-item:hover { border-color: var(--border-2); background: var(--surface-2); }
+.txn-item.posted { background: var(--surface); }
+.txn-item.posted:hover { background: var(--surface-2); }
+.txn-header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+.txn-num { width: 22px; height: 22px; border-radius: 50%; background: var(--surface-2); border: 0.5px solid var(--border); font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--text-2); transition: all 0.15s; }
+.txn-item.posted .txn-num { background: #EAF3DE; color: #27500A; border-color: #C0DD97; }
+.txn-title { font-size: 14px; font-weight: 500; flex: 1; }
+.txn-amount { font-size: 13px; color: var(--text-2); }
+.txn-detail { padding: 0 12px 10px; font-size: 13px; color: var(--text-2); line-height: 1.55; border-top: 0.5px solid var(--border); }
+.txn-detail p { margin-top: 8px; }
+.post-all-btn { width: 100%; padding: 9px; background: var(--surface); border: 0.5px solid var(--border-2); border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text); margin-top: 8px; }
+.post-all-btn:hover { background: var(--surface-2); }
+.reset-btn { width: 100%; padding: 7px; background: none; border: 0.5px solid var(--border); border-radius: var(--radius); font-size: 12px; cursor: pointer; color: var(--text-2); margin-top: 6px; }
+
+.wt-right { }
+.wt-fs-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 900px) { .wt-fs-grid { grid-template-columns: 1fr; } }
+.wt-fs-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px; }
+.wt-fs-card h4 { font-size: 11px; font-weight: 500; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+.wt-line { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.wt-line:last-child { border-bottom: none; }
+.wt-line .wl-name { color: var(--text-2); }
+.wt-line .wl-val { font-weight: 500; color: var(--text); }
+.wt-line.total .wl-name, .wt-line.total .wl-val { color: var(--text); }
+.wt-line.highlighted { background: var(--highlight); border-radius: 3px; padding: 4px 4px; margin: 0 -4px; }
+.wt-line .wl-delta { font-size: 11px; margin-left: 4px; }
+.wt-line .wl-delta.pos { color: #3B6D11; }
+.wt-line .wl-delta.neg { color: #A32D2D; }
+
+.wt-ratio-section { margin-top: 16px; }
+.wt-ratio-section h3 { font-size: 16px; font-weight: 500; margin-bottom: 12px; }
+table.wt-rt { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.wt-rt th { font-size: 14px; font-weight: 600; color: var(--text); padding: 9px 12px; border-bottom: 1px solid var(--border-2); text-align: left; background: var(--surface-2); }
+table.wt-rt td { padding: 11px 12px; border-bottom: 0.5px solid var(--border); font-size: 13px; vertical-align: top; line-height: 1.55; }
+table.wt-rt td.val { text-align: right; font-weight: 500; vertical-align: middle; min-width: 80px; }
+table.wt-rt tr.category { background: var(--surface-2); }
+table.wt-rt tr.category td { font-size: 12px; font-weight: 500; color: var(--text-2); padding: 6px 12px; }
+table.wt-rt .rname-cell { font-weight: 500; color: var(--text); margin-bottom: 3px; }
+table.wt-rt .rformula-cell { font-size: 11px; color: var(--text-3); font-family: "SF Mono", monospace; }
+
+.def-card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; }
+.def-card .dc-name { font-size: 12px; font-weight: 500; color: var(--text); }
+.def-card .dc-formula { font-size: 11px; color: var(--text-3); font-family: "SF Mono", monospace; margin-top: 1px; }
+.def-card .dc-def { font-size: 12px; color: var(--text-2); margin-top: 4px; line-height: 1.5; }
+.def-card .dc-signal { font-size: 11px; margin-top: 4px; }
+.signal-inv { color: var(--inv); }
+.signal-bank { color: var(--bank); }
+.signal-mgr { color: var(--mgr); }
+
+/* highlight in wt statements */
+.wt-line .wl-name { position: relative; }
+.ind-dots { display: inline-flex; gap: 2px; margin-left: 5px; vertical-align: middle; }
+.ind-dot { width: 6px; height: 6px; border-radius: 50%; display: none; }
+.ind-dot.show { display: inline-block; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Financial ratio analysis</h1>
+  <p class="subtitle">BA 1310 · UTD · Mouli Modak</p>
+
+  <div class="mode-tabs">
+    <button class="mtab active" onclick="setMode('example')">Acquisition decision: three targets</button>
+    <button class="mtab" onclick="setMode('walkthrough')">Walkthrough: build from transactions</button>
+  </div>
+
+  <!-- ════════════ EXAMPLE MODE ════════════ -->
+  <div class="section active" id="sec-example">
+    <p style="font-size:14px;color:var(--text-2);margin-bottom:1rem;">A holding company is evaluating three potential acquisition targets. Click a target button to open its financial statements. Toggle ratios on/off to highlight the line items used. Hover the <span style="font-size:12px;background:var(--surface-2);border:0.5px solid var(--border-2);border-radius:50%;padding:1px 5px;">?</span> for definitions and what each role makes of it.</p>
+
+    <div class="proj-row">
+      <button class="ptab" onclick="toggleSidebar('A')">Target A</button>
+      <button class="ptab" onclick="toggleSidebar('B')">Target B</button>
+      <button class="ptab" onclick="toggleSidebar('C')">Target C</button>
+      <span style="font-size:13px;color:var(--text-3);margin-left:8px;" id="sidebar-hint">← click to open financial statements</span>
+    </div>
+
+    <div class="main-area">
+      <div class="content-area">
+        <!-- Ratio toggle controls -->
+        <div class="ratio-table-wrap">
+          <div class="rt-heading-row">
+            <h3>Ratio comparison</h3>
+            <span class="rt-hint">Toggle ratios below to display them in the tables.</span>
+          </div>
+          <div class="ratio-controls" id="ratio-controls"></div>
+          <div class="legend-row">
+            <div class="fs-legend">
+              <span class="legend-item"><span class="legend-dot" style="background:#185FA5"></span>Income Statement</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#854F0B"></span>Balance Sheet</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#3B6D11"></span>Cash Flow</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#7F2389"></span>Per Share</span>
+            </div>
+            <div class="bulk-btns">
+              <button class="bulk-btn" onclick="showAllRatios()">Show all</button>
+              <button class="bulk-btn" onclick="clearAllRatios()">Clear all</button>
+            </div>
+          </div>
+          <table class="rt" id="ratio-table">
+            <thead>
+              <tr>
+                <th style="width:280px;">Ratio</th>
+                <th class="proj">Target A</th>
+                <th class="proj">Target B</th>
+                <th class="proj">Target C</th>
+              </tr>
+            </thead>
+            <tbody id="ratio-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Perspective cards -->
+        <div style="margin-bottom:14px;margin-top:1.5rem;">
+          <h3 style="font-size:17px;font-weight:500;margin-bottom:6px;">Three roles, three views</h3>
+          <p style="font-size:14px;color:var(--text-2);">An Equity Investor, Bank Advisor, and Integration Officer each look at different ratios when evaluating an acquisition target. Toggle ratios above — they will appear in the relevant role's table below.</p>
+        </div>
+        <div class="persp-stack" id="persp-grid"></div>
+      </div>
+
+      <!-- Sidebar with financial statements -->
+      <div class="sidebar" id="fs-sidebar">
+        <h3>
+          <span id="sidebar-title">Financial statements</span>
+          <button class="close-sidebar" onclick="closeSidebar()">×</button>
+        </h3>
+        <div id="sidebar-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ WALKTHROUGH MODE ════════════ -->
+  <div class="section" id="sec-walkthrough">
+    <p style="font-size:14px;color:var(--text-2);margin-bottom:0.75rem;">Pick a scenario, then click each transaction to post it to the financial statements. Click again to toggle it off. Watch the statements and ratios update with every change.</p>
+
+    <div class="scenario-row">
+      <span class="scen-label">Scenario:</span>
+      <div class="scen-picker" id="scenario-picker"></div>
+    </div>
+    <p id="scenario-desc" style="font-size:13px;color:var(--text-2);margin-bottom:1.25rem;font-style:italic;"></p>
+
+    <div class="txn-layout">
+      <div class="txn-list" id="txn-list"></div>
+      <div class="wt-right">
+        <div class="wt-fs-grid" id="wt-fs-grid"></div>
+        <div class="wt-ratio-section">
+          <div class="wt-ratio-header">
+            <h3>Ratios computed from these transactions</h3>
+            <button id="wt-hide-btn" class="bulk-btn" onclick="toggleWtRatios()">Hide ratios</button>
+          </div>
+          <div class="fs-legend" style="margin-bottom:14px;">
+            <span class="legend-item"><span class="legend-dot" style="background:#185FA5"></span>Income Statement</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#854F0B"></span>Balance Sheet</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#3B6D11"></span>Cash Flow</span>
+          </div>
+          <table class="wt-rt" id="wt-ratio-table"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div class="tooltip-box" id="tooltip"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════
+
+const PROJECTS = {
+  A: {
+    name: 'Target A — TechFlow Inc.',
+    desc: 'High-growth SaaS startup. Strong revenue growth and margins, but heavily leveraged with thin liquidity cushion.',
+    is: { revenue:1200000, cogs:480000, gross_profit:720000, op_expenses:320000, ebit:400000, interest:60000, ebt:340000, tax:85000, net_income:255000 },
+    bs: { cash:90000, ar:180000, inventory:60000, current_assets:380000, total_assets:1100000, cl:200000, total_liabilities:660000, equity:440000, ltd:460000 },
+    cf: { cfo:310000, cfi:-120000, cff:-80000 },
+    shares: { basic: 100000, diluted: 115000, dividends: 30000, market_price: 25 }
+  },
+  B: {
+    name: 'Target B — Steadfast Manufacturing',
+    desc: 'Mature manufacturer. Moderate margins with conservative leverage and a healthy balance sheet — fewer surprises.',
+    is: { revenue:900000, cogs:540000, gross_profit:360000, op_expenses:180000, ebit:180000, interest:20000, ebt:160000, tax:40000, net_income:120000 },
+    bs: { cash:140000, ar:100000, inventory:130000, current_assets:420000, total_assets:950000, cl:160000, total_liabilities:380000, equity:570000, ltd:220000 },
+    cf: { cfo:160000, cfi:-50000, cff:-30000 },
+    shares: { basic: 80000, diluted: 82000, dividends: 60000, market_price: 18 }
+  },
+  C: {
+    name: 'Target C — Retail Chain Co.',
+    desc: 'Retail chain. Thin margins and inventory-heavy, but fast asset turnover and moderate debt load.',
+    is: { revenue:2100000, cogs:1680000, gross_profit:420000, op_expenses:240000, ebit:180000, interest:35000, ebt:145000, tax:36250, net_income:108750 },
+    bs: { cash:60000, ar:70000, inventory:320000, current_assets:510000, total_assets:820000, cl:310000, total_liabilities:490000, equity:330000, ltd:180000 },
+    cf: { cfo:145000, cfi:-40000, cff:-25000 },
+    shares: { basic: 60000, diluted: 64000, dividends: 24000, market_price: 12 }
+  }
+};
+
+const RATIOS = [
+  // ── PROFITABILITY ──
+  { id:'net_margin',      name:'Profit margin',         formula:'Net Income / Sales',                     category:'profitability', pct:true,  hb:true,  persp:['inv'],
+    def:'Percentage of sales that becomes profit after all expenses including tax and interest. The bottom-line profitability measure.',
+    inv:'The final "take-home" return on each dollar of sales — directly tied to earnings per share.',
+    bank:'Low profit margins indicate limited buffer if sales fall.',
+    mgr:'Reflects the combined effect of all cost management decisions.',
+    lines:{is:['revenue','net_income'],bs:[],cf:[]} },
+
+  { id:'roe',             name:'Return on equity',      formula:'Net Income / Total Equity',              category:'profitability', pct:true,  hb:true,  persp:['inv'],
+    def:'How much profit is generated for each dollar of shareholder equity. Investors compare this to their required rate of return.',
+    inv:'Primary metric for equity investors — measures how well management uses shareholder capital.',
+    bank:'High ROE can also mean high leverage — bankers look at this alongside debt ratios.',
+    mgr:'Signals whether the business is creating or destroying shareholder value.',
+    lines:{is:['net_income'],bs:['equity'],cf:[]} },
+
+  { id:'roa',             name:'Return on assets',      formula:'Net Income / Total Assets',              category:'profitability', pct:true,  hb:true,  persp:['inv','mgr'],
+    def:'Profit generated per dollar of assets. Shows how efficiently assets are being deployed to produce earnings.',
+    inv:'Useful for comparing capital efficiency across firms of different sizes.',
+    bank:'Indicates asset productivity — important when assets are used as loan collateral.',
+    mgr:'Helps evaluate whether investing in new assets is worthwhile.',
+    lines:{is:['net_income'],bs:['total_assets'],cf:[]} },
+
+  // ── ASSET UTILIZATION ──
+  { id:'asset_turnover',  name:'Asset turnover',        formula:'Sales / Total Assets',                   category:'asset_util', pct:false, hb:true,  persp:['mgr','inv'],
+    def:'Sales generated per dollar of assets. High turnover means assets are being used efficiently to generate sales.',
+    inv:'Efficiency metric — combined with profit margin gives ROA (DuPont analysis).',
+    bank:'Indicates whether asset base is productive.',
+    mgr:'Benchmarks operational efficiency — low turnover may mean idle or underused assets.',
+    lines:{is:['revenue'],bs:['total_assets'],cf:[]} },
+
+  { id:'inventory_turnover', name:'Inventory turnover', formula:'COGS / Inventory',                       category:'asset_util', pct:false, hb:true,  persp:['mgr'],
+    def:'How many times inventory is sold and replaced over a period. Higher turnover means inventory moves quickly and ties up less capital.',
+    inv:'Indicates how well the company manages its working capital.',
+    bank:'Slow-moving inventory may signal write-down risk or weak demand.',
+    mgr:'Direct measure of inventory management efficiency.',
+    lines:{is:['cogs'],bs:['inventory'],cf:[]} },
+
+  { id:'receivables_turnover', name:'Receivables turnover', formula:'Sales / Accounts Receivable',       category:'asset_util', pct:false, hb:true,  persp:['mgr','bank'],
+    def:'How efficiently the company collects from credit customers. Higher turnover = faster collection.',
+    inv:'Slow collections can mask actual profitability and signal credit risk in the customer base.',
+    bank:'Important for evaluating quality of receivables as collateral.',
+    mgr:'Directly tied to credit policy and collections effectiveness.',
+    lines:{is:['revenue'],bs:['ar'],cf:[]} },
+
+  // ── LIQUIDITY ──
+  { id:'current_ratio',   name:'Current ratio',         formula:'Current Assets / Current Liabilities',   category:'liquidity', pct:false, hb:true,  persp:['bank'],
+    def:'Measures ability to pay short-term obligations with short-term assets. A ratio above 1.5–2× is generally healthy.',
+    inv:'Low current ratio signals liquidity risk — could disrupt operations.',
+    bank:'Key short-term solvency indicator — lenders want to see ≥ 1.5×.',
+    mgr:'Guides working capital decisions — too high means idle cash, too low is risky.',
+    lines:{is:[],bs:['current_assets','cl'],cf:[]} },
+
+  { id:'quick_ratio',     name:'Quick ratio',           formula:'(Cash + AR) / Current Liabilities',      category:'liquidity', pct:false, hb:true,  persp:['bank'],
+    def:'Like the current ratio but excludes inventory (which can be slow to convert). A stricter test of immediate liquidity.',
+    inv:'Rapid-fire test of whether the firm can meet near-term obligations without selling inventory.',
+    bank:'More conservative than current ratio — preferred when inventory is illiquid.',
+    mgr:'Warning signal if below 1× — may struggle to pay suppliers on time.',
+    lines:{is:[],bs:['cash','ar','cl'],cf:[]} },
+
+  // ── DEBT UTILIZATION ──
+  { id:'debt_ratio',      name:'Debt ratio',            formula:'Total Liabilities / Total Assets',       category:'debt_util', pct:true,  hb:false, persp:['bank'],
+    def:'Proportion of assets financed by creditors. Above 0.5 means more than half of assets are debt-financed.',
+    inv:'Higher debt ratio amplifies risk — assets may not cover debts in liquidation.',
+    bank:'Gives a picture of what creditors would recover if the business failed.',
+    mgr:'Benchmark for capital structure — high ratios limit future borrowing capacity.',
+    lines:{is:[],bs:['total_liabilities','total_assets'],cf:[]} },
+
+  { id:'interest_coverage',name:'Times interest ratio', formula:'EBIT / Interest Expense',                category:'debt_util', pct:false, hb:true,  persp:['bank'],
+    def:'How many times operating profit covers interest payments. Below 1.5× is a warning; below 1× means the firm cannot pay interest from operations.',
+    inv:'Signals whether debt load is manageable — very low coverage is a red flag.',
+    bank:'Most important debt service ratio — often the first thing a banker checks.',
+    mgr:'Helps decide how much additional debt is safe to take on.',
+    lines:{is:['ebit','interest'],bs:[],cf:[]} },
+
+  // ── PER SHARE DATA ──
+  { id:'eps_diluted',     name:'Diluted EPS',           formula:'Net Income / Diluted Shares',            category:'per_share', pct:false, hb:true,  persp:['inv'], unit:'$',
+    def:'EPS calculated as if all dilutive securities (options, warrants, convertibles) were exercised. The conservative measure of per-share earnings.',
+    inv:'Reveals true earnings per share if all potential shares were issued — critical for valuation.',
+    bank:'Indicates the maximum share count that could affect payout coverage.',
+    mgr:'Highlights the impact of equity-based compensation on existing shareholders.',
+    lines:{is:['net_income'],bs:[],cf:[],shares:['diluted']} },
+
+  { id:'dividend_per_share', name:'Dividends per share', formula:'Dividends Paid / Basic Shares',         category:'per_share', pct:false, hb:true,  persp:['inv'], unit:'$',
+    def:'Dollar amount of dividends paid for each common share. Indicates current cash returns to shareholders.',
+    inv:'Income-focused investors care about consistent and growing DPS.',
+    bank:'High dividends reduce cash available for debt service.',
+    mgr:'Signals confidence in future cash flows — committing to a DPS is a long-term promise.',
+    lines:{is:[],bs:[],cf:[],shares:['dividends','basic']} },
+];
+
+const CATEGORIES = [
+  { id:'profitability', name:'Profitability ratios' },
+  { id:'asset_util',    name:'Asset utilization ratios' },
+  { id:'liquidity',     name:'Liquidity ratios' },
+  { id:'debt_util',     name:'Debt utilization ratios' },
+  { id:'per_share',     name:'Per share data' },
+];
+
+// Colors keyed to financial statement type — Income Statement / Balance Sheet / Cash Flow / Per Share
+const FS_COLORS = {
+  is: '#185FA5',  // blue   — Income Statement
+  bs: '#854F0B',  // amber  — Balance Sheet
+  cf: '#3B6D11',  // green  — Cash Flow
+  shares: '#7F2389', // purple — Per Share Data
+};
+const FS_LABELS = { is: 'Income Statement', bs: 'Balance Sheet', cf: 'Cash Flow', shares: 'Per Share' };
+
+// Stakeholder colors — distinct from FS colors (no blue/amber/green/purple overlap)
+const RATIO_COLORS = {
+  inv:'#72243E',  // pink — Investor
+  bank:'#712B13', // coral — Banker
+  mgr:'#085041'   // teal — Manager
+};
+
+// Returns which statement types a ratio draws from
+function getRatioStatements(ratio) {
+  const types = [];
+  if (ratio.lines.is && ratio.lines.is.length) types.push('is');
+  if (ratio.lines.bs && ratio.lines.bs.length) types.push('bs');
+  if (ratio.lines.cf && ratio.lines.cf.length) types.push('cf');
+  if (ratio.lines.shares && ratio.lines.shares.length) types.push('shares');
+  return types;
+}
+
+// ═══════════════════════════════════════════════════
+// RATIO CALCULATION
+// ═══════════════════════════════════════════════════
+function calcRatios(d) {
+  const safe = (n,den) => (den && isFinite(den) && den !== 0) ? n/den : null;
+  const is = d.is, bs = d.bs, cf = d.cf;
+  const sh = d.shares || {};
+  return {
+    net_margin:       safe(is.net_income, is.revenue),
+    roe:              safe(is.net_income, bs.equity),
+    roa:              safe(is.net_income, bs.total_assets),
+    asset_turnover:   safe(is.revenue, bs.total_assets),
+    inventory_turnover:   safe(is.cogs, bs.inventory),
+    receivables_turnover: safe(is.revenue, bs.ar),
+    current_ratio:    safe(bs.current_assets, bs.cl),
+    quick_ratio:      safe(bs.cash + bs.ar, bs.cl),
+    debt_ratio:       safe(bs.total_liabilities, bs.total_assets),
+    interest_coverage:safe(is.ebit, is.interest),
+    eps_diluted:      safe(is.net_income, sh.diluted),
+    dividend_per_share: safe(sh.dividends, sh.basic),
+  };
+}
+
+function fmt(v, pct, unit) {
+  if (v === null || !isFinite(v)) return '—';
+  if (unit === '$') return '$' + v.toFixed(2);
+  if (pct) return (v*100).toFixed(1)+'%';
+  return v.toFixed(2)+'×';
+}
+
+function fmtMoney(v) {
+  if (!v && v !== 0) return '—';
+  const abs = Math.abs(v);
+  const sign = v < 0 ? '−' : '';
+  if (abs >= 1000000) return sign + '$' + (abs/1000000).toFixed(1) + 'M';
+  if (abs >= 1000) return sign + '$' + (abs/1000).toFixed(0) + 'K';
+  return sign + '$' + abs;
+}
+
+// ═══════════════════════════════════════════════════
+// EXAMPLE MODE
+// ═══════════════════════════════════════════════════
+const toggleState = {};
+let activeSidebarProject = null;
+
+const FS_LINES = {
+  is: [
+    { key:'revenue',      label:'Sales',              total:false },
+    { key:'cogs',         label:'Cost of goods sold',   total:false },
+    { key:'gross_profit', label:'Gross profit',         total:true  },
+    { key:'op_expenses',  label:'Operating expenses',   total:false },
+    { key:'ebit',         label:'Operating income (EBIT)', total:true },
+    { key:'interest',     label:'Interest expense',     total:false },
+    { key:'ebt',          label:'EBT',                  total:false },
+    { key:'tax',          label:'Income tax',           total:false },
+    { key:'net_income',   label:'Net income',           total:true  },
+  ],
+  bs: [
+    { key:'cash',            label:'Cash & equivalents',  total:false },
+    { key:'ar',              label:'Accounts receivable', total:false },
+    { key:'inventory',       label:'Inventory',           total:false },
+    { key:'current_assets',  label:'Total current assets',total:true  },
+    { key:'total_assets',    label:'Total assets',        total:true  },
+    { key:'cl',              label:'Current liabilities', total:false },
+    { key:'total_liabilities',label:'Total liabilities',  total:true  },
+    { key:'equity',          label:'Total equity',        total:true  },
+    { key:'ltd',             label:'Long-term debt',      total:false },
+  ],
+  cf: [
+    { key:'cfo', label:'Cash from operations', total:false },
+    { key:'cfi', label:'Cash from investing',  total:false },
+    { key:'cff', label:'Cash from financing',  total:false },
+  ],
+  shares: [
+    { key:'basic',     label:'Basic shares outstanding',   total:false, isShares:true },
+    { key:'diluted',   label:'Diluted shares outstanding', total:false, isShares:true },
+    { key:'dividends', label:'Dividends paid',             total:false, isMoney:true },
+    { key:'market_price', label:'Current market price',    total:false, isMoneyShare:true },
+  ]
+};
+
+function initExample() {
+  // Build toggle controls grouped by category
+  const ctrl = document.getElementById('ratio-controls');
+  ctrl.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const catRatios = RATIOS.filter(r => r.category === cat.id);
+    if (catRatios.length === 0) return;
+    const group = document.createElement('div');
+    group.className = 'ratio-cat-group';
+    const label = document.createElement('div');
+    label.className = 'ratio-cat-label';
+    label.innerHTML = `<span class="cat-name">${cat.name}</span> <button class="cat-toggle-all" data-cat="${cat.id}" title="Toggle all in this category">all</button>`;
+    group.appendChild(label);
+    const pills = document.createElement('div');
+    pills.className = 'ratio-cat-pills';
+    catRatios.forEach(r => {
+      toggleState[r.id] = false;
+      const stmts = getRatioStatements(r);
+      const dotHtml = stmts.map(s => `<span class="rt-dot" style="background:${FS_COLORS[s]}" title="${FS_LABELS[s]}"></span>`).join('');
+      const btn = document.createElement('label');
+      btn.className = 'ratio-toggle';
+      btn.dataset.rid = r.id;
+      btn.innerHTML = dotHtml + r.name;
+      btn.style.cursor = 'pointer';
+      btn.onclick = () => { toggleState[r.id] = !toggleState[r.id]; renderRatioTable(); renderPerspCards(); if (activeSidebarProject) renderSidebar(activeSidebarProject); };
+      pills.appendChild(btn);
+    });
+    group.appendChild(pills);
+    ctrl.appendChild(group);
+    // Wire up the category-level toggle
+    label.querySelector('.cat-toggle-all').onclick = (e) => {
+      e.stopPropagation();
+      const allOn = catRatios.every(r => toggleState[r.id]);
+      catRatios.forEach(r => { toggleState[r.id] = !allOn; });
+      renderRatioTable();
+      renderPerspCards();
+      if (activeSidebarProject) renderSidebar(activeSidebarProject);
+    };
+  });
+  renderRatioTable();
+  renderPerspCards();
+}
+
+function showAllRatios() {
+  RATIOS.forEach(r => { toggleState[r.id] = true; });
+  renderRatioTable();
+  renderPerspCards();
+  if (activeSidebarProject) renderSidebar(activeSidebarProject);
+}
+
+function clearAllRatios() {
+  RATIOS.forEach(r => { toggleState[r.id] = false; });
+  renderRatioTable();
+  renderPerspCards();
+  if (activeSidebarProject) renderSidebar(activeSidebarProject);
+}
+
+function renderRatioTable() {
+  // Update toggle button styles
+  document.querySelectorAll('#ratio-controls .ratio-toggle').forEach(btn => {
+    const rid = btn.dataset.rid;
+    btn.classList.toggle('on', !!toggleState[rid]);
+    btn.style.background = toggleState[rid] ? 'var(--surface-2)' : '';
+  });
+
+  const tbody = document.getElementById('ratio-tbody');
+  tbody.innerHTML = '';
+  const projKeys = ['A','B','C'];
+  const ratiosByProj = {};
+  projKeys.forEach(k => { ratiosByProj[k] = calcRatios(PROJECTS[k]); });
+
+  // Render with category headers — only show categories that have at least one toggled-on ratio
+  CATEGORIES.forEach(cat => {
+    const catRatios = RATIOS.filter(r => r.category === cat.id && toggleState[r.id]);
+    if (catRatios.length === 0) return;
+
+    // Category header row
+    const catTr = document.createElement('tr');
+    catTr.className = 'cat-header';
+    catTr.innerHTML = `<td colspan="4">${cat.name}</td>`;
+    tbody.appendChild(catTr);
+
+    catRatios.forEach(r => {
+      const tr = document.createElement('tr');
+      const vals = projKeys.map(k => ratiosByProj[k][r.id]);
+      const valid = vals.filter(v => v !== null && isFinite(v));
+      let ranks = ['','',''];
+      if (valid.length >= 2) {
+        const sorted = [...vals.map((v,i)=>({v,i}))].filter(x=>x.v!==null&&isFinite(x.v));
+        sorted.sort((a,b) => r.hb ? b.v-a.v : a.v-b.v);
+        if (sorted[0]) ranks[sorted[0].i] = 'best';
+        if (sorted.length>=2) ranks[sorted[sorted.length-1].i] = 'worst';
+        if (sorted.length===3) ranks[sorted[1].i] = 'mid';
+      }
+      const stmts = getRatioStatements(r);
+      const dotsHtml = stmts.map(s=>`<span class="rt-dot" style="background:${FS_COLORS[s]};width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:2px;" title="${FS_LABELS[s]}"></span>`).join('');
+      tr.innerHTML = `
+        <td>
+          <div class="rname-wrap">
+            ${dotsHtml}
+            <span>${r.name}</span>
+            <button class="def-btn" data-rid="${r.id}" onmouseenter="showTooltip(event,'${r.id}')" onmouseleave="hideTooltip()">?</button>
+            <span class="formula">${r.formula}</span>
+          </div>
+        </td>
+        ${vals.map((v,i)=>`<td class="rval">${fmt(v,r.pct,r.unit)}<span class="badge badge-${ranks[i]}">${ranks[i]?({best:'↑ best',worst:'↓ worst',mid:'mid'})[ranks[i]]:''}</span></td>`).join('')}`;
+      tbody.appendChild(tr);
+    });
+  });
+
+  // If no ratios are toggled, show an empty state
+  if (tbody.children.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="4" style="text-align:center;color:var(--text-3);padding:24px;font-style:italic;">Toggle ratios above to populate the comparison.</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function renderPerspCards() {
+  const projKeys = ['A','B','C'];
+  const ratiosByProj = {};
+  projKeys.forEach(k => { ratiosByProj[k] = calcRatios(PROJECTS[k]); });
+
+  const persp = [
+    { id:'inv',  cls:'inv',  icon:'$', title:'Equity Investor',  sub:'Returns & growth — will this acquisition increase shareholder value?',
+      ratioIds:['net_margin','roe','roa','asset_turnover','eps_diluted','dividend_per_share'] },
+    { id:'bank', cls:'bank', icon:'%', title:'Bank Advisor',     sub:'Solvency & coverage — can this target service the acquisition financing?',
+      ratioIds:['current_ratio','quick_ratio','debt_ratio','interest_coverage','receivables_turnover'] },
+    { id:'mgr',  cls:'mgr',  icon:'⚙', title:'Integration Officer', sub:'Efficiency & operations — how cleanly will this target integrate?',
+      ratioIds:['roa','asset_turnover','inventory_turnover','receivables_turnover','net_margin'] },
+  ];
+
+  const grid = document.getElementById('persp-grid');
+  grid.innerHTML = '';
+  persp.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'persp-card ' + p.cls;
+    // Filter to only ratios that are toggled on
+    const visibleRatioIds = p.ratioIds.filter(rid => toggleState[rid]);
+    let rows = '';
+    if (visibleRatioIds.length === 0) {
+      rows = `<tr class="empty-row"><td colspan="4">Toggle ratios above to populate this table.</td></tr>`;
+    } else {
+      // Group visible ratios by category
+      CATEGORIES.forEach(cat => {
+        const catRatios = visibleRatioIds
+          .map(rid => RATIOS.find(x => x.id === rid))
+          .filter(r => r && r.category === cat.id);
+        if (catRatios.length === 0) return;
+        rows += `<tr class="pt-cat-row"><td colspan="4">${cat.name}</td></tr>`;
+        catRatios.forEach(r => {
+          const stmts = getRatioStatements(r);
+          const dotsHtml = stmts.map(s=>`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${FS_COLORS[s]};margin-right:3px;vertical-align:middle;" title="${FS_LABELS[s]}"></span>`).join('');
+          const vals = projKeys.map(k => ratiosByProj[k][r.id]);
+          rows += `<tr>
+            <td>
+              <div class="pt-name">${dotsHtml}${r.name}</div>
+              <div class="pt-formula">${r.formula}</div>
+              <div class="pt-def">${r[p.id]||''}</div>
+            </td>
+            ${vals.map((v,i)=>`<td class="pt-val">${fmt(v,r.pct,r.unit)}</td>`).join('')}
+          </tr>`;
+        });
+      });
+    }
+    card.innerHTML = `
+      <div class="persp-head">
+        <div class="persp-icon">${p.icon}</div>
+        <div class="persp-head-text">
+          <div class="pt">${p.title}</div><div class="ps">${p.sub}</div>
+        </div>
+      </div>
+      <table class="persp-table">
+        <thead>
+          <tr>
+            <th>Ratio &amp; what it tells the ${p.title.toLowerCase()}</th>
+            <th class="proj">Target A</th>
+            <th class="proj">Target B</th>
+            <th class="proj">Target C</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    grid.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════════════
+function toggleSidebar(proj) {
+  const sidebar = document.getElementById('fs-sidebar');
+  const hint = document.getElementById('sidebar-hint');
+  if (activeSidebarProject === proj && sidebar.classList.contains('open')) {
+    closeSidebar(); return;
+  }
+  activeSidebarProject = proj;
+  sidebar.classList.add('open');
+  hint.style.display = 'none';
+  document.querySelectorAll('.ptab').forEach((b,i) => b.classList.toggle('active', ['A','B','C'][i]===proj));
+  renderSidebar(proj);
+}
+
+function closeSidebar() {
+  document.getElementById('fs-sidebar').classList.remove('open');
+  document.getElementById('sidebar-hint').style.display = '';
+  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
+  activeSidebarProject = null;
+}
+
+function renderSidebar(proj) {
+  const p = PROJECTS[proj];
+  document.getElementById('sidebar-title').textContent = proj === 'A' ? 'Target A' : proj === 'B' ? 'Target B' : 'Target C';
+
+  // Which line items are highlighted by active ratios?
+  const activeHighlights = { is:new Set(), bs:new Set(), cf:new Set(), shares:new Set() };
+  RATIOS.forEach(r => {
+    if (toggleState[r.id]) {
+      (r.lines.is||[]).forEach(k=>activeHighlights.is.add(k));
+      (r.lines.bs||[]).forEach(k=>activeHighlights.bs.add(k));
+      (r.lines.cf||[]).forEach(k=>activeHighlights.cf.add(k));
+      (r.lines.shares||[]).forEach(k=>activeHighlights.shares.add(k));
+    }
+  });
+
+  function renderFsSection(title, sectionKey, dataObj, linesDef) {
+    const sectionColor = FS_COLORS[sectionKey];
+    let html = `<div class="fs-section"><h4 style="color:${sectionColor}">${title}</h4>`;
+    linesDef.forEach(line => {
+      const val = dataObj ? dataObj[line.key] : null;
+      const highlighted = activeHighlights[sectionKey].has(line.key);
+      const dotHtml = `<span class="fs-indicator"><span class="fs-dot ${highlighted?'visible':''}" style="background:${sectionColor}"></span></span>`;
+      let displayVal;
+      if (line.isShares) displayVal = (val || 0).toLocaleString();
+      else if (line.isMoneyShare) displayVal = '$' + (val || 0).toFixed(2);
+      else displayVal = fmtMoney(val);
+      html += `<div class="fs-line${line.total?' total':''}${highlighted?' highlighted':''}">
+        <span class="lname">${dotHtml}${line.label}</span>
+        <span class="lval">${displayVal}</span>
+      </div>`;
+    });
+    html += '</div>';
+    return html;
+  }
+
+  document.getElementById('sidebar-content').innerHTML =
+    `<div style="font-size:13px;color:var(--text-2);margin-bottom:12px;line-height:1.55;">${p.desc}</div>` +
+    renderFsSection('Income Statement', 'is', p.is, FS_LINES.is) +
+    renderFsSection('Balance Sheet', 'bs', p.bs, FS_LINES.bs) +
+    renderFsSection('Cash Flow Statement', 'cf', p.cf, FS_LINES.cf) +
+    renderFsSection('Per Share Data', 'shares', p.shares, FS_LINES.shares);
+}
+
+// ═══════════════════════════════════════════════════
+// TOOLTIP
+// ═══════════════════════════════════════════════════
+function showTooltip(event, rid) {
+  const r = RATIOS.find(x=>x.id===rid);
+  const stmts = getRatioStatements(r);
+  const sourceLabel = stmts.map(s => `<span style="color:${FS_COLORS[s]}">●</span> ${FS_LABELS[s]}`).join(' &nbsp; ');
+  const box = document.getElementById('tooltip');
+  box.innerHTML = `<strong style="font-size:13px;color:var(--text)">${r.name}</strong><br>
+    <span style="font-size:12px;color:var(--text-3);font-family:'SF Mono',monospace">${r.formula}</span><br>
+    <span style="font-size:11px;color:var(--text-3);">Sources: ${sourceLabel}</span><br><br>
+    ${r.def}<br><br>
+    <strong style="color:var(--inv-text)">Equity Investor:</strong> ${r.inv}<br>
+    <strong style="color:var(--bank-text)">Bank Advisor:</strong> ${r.bank}<br>
+    <strong style="color:var(--mgr-text)">Integration Officer:</strong> ${r.mgr}`;
+  box.style.display = 'block';
+  const rect = event.target.getBoundingClientRect();
+  const scrollY = window.scrollY;
+  box.style.top = (rect.bottom + scrollY + 6) + 'px';
+  box.style.left = Math.min(rect.left, window.innerWidth - 340) + 'px';
+}
+function hideTooltip() { document.getElementById('tooltip').style.display = 'none'; }
+
+// ═══════════════════════════════════════════════════
+// WALKTHROUGH MODE
+// ═══════════════════════════════════════════════════
+
+// Each scenario is a self-contained business situation with its own transactions.
+// Transactions affect balance sheet, income statement, and cash flow as appropriate.
+const SCENARIOS = [
+  {
+    id: 'coffee',
+    name: "Maya's Coffee Roastery — first quarter",
+    desc: "Maya opens a small specialty coffee roastery. Walk through the financing, capital purchases, and first quarter of operations.",
+    transactions: [
+      { id:1, title:'Owner invests savings',          amount:'+$80,000',
+        desc:"Maya invests $80,000 of her own savings into the business in exchange for shares.",
+        changes:{ bs_cash:80000, bs_equity:80000, cf_cff:80000 } },
+      { id:2, title:'Take out SBA loan',              amount:'+$120,000',
+        desc:"Bank approves a $120,000 long-term loan at 6% interest. Cash and long-term debt both increase.",
+        changes:{ bs_cash:120000, bs_ltd:120000, bs_total_liabilities:120000, cf_cff:120000 } },
+      { id:3, title:'Buy roasting equipment',         amount:'−$90,000',
+        desc:"Purchase a commercial roaster, grinder, and packaging line. Cash drops; fixed assets rise. Investing outflow.",
+        changes:{ bs_cash:-90000, bs_equipment:90000, cf_cfi:-90000 } },
+      { id:4, title:'Buy initial inventory',          amount:'−$30,000',
+        desc:"Purchase $30,000 of green coffee beans on cash. Inventory builds up; cash drops. Operating outflow.",
+        changes:{ bs_cash:-30000, bs_inventory:30000, cf_cfo:-30000 } },
+      { id:5, title:'Sell roasted coffee on credit',  amount:'+$95,000 sales',
+        desc:"Sell $95,000 to wholesale cafés on net-30 terms. Revenue recognized. AR rises. No cash yet — operating cash from this sale comes when AR is collected.",
+        changes:{ is_revenue:95000, is_cogs:38000, bs_inventory:-38000, bs_ar:95000, bs_equity:57000 } },
+      { id:6, title:'Collect receivables',            amount:'+$60,000 cash',
+        desc:"Customers pay $60,000 of outstanding AR. Cash up; AR down. This is when the cash actually arrives — it shows up as operating cash flow.",
+        changes:{ bs_cash:60000, bs_ar:-60000, cf_cfo:60000 } },
+      { id:7, title:'Pay rent and wages',             amount:'−$28,000',
+        desc:"Pay $28,000 in operating expenses (rent, wages, utilities) in cash. Hits income statement and cash flow.",
+        changes:{ is_op_expenses:28000, is_ebit:-28000, is_net_income:-28000, bs_cash:-28000, bs_equity:-28000, cf_cfo:-28000 } },
+      { id:8, title:'Pay loan interest',              amount:'−$1,800',
+        desc:"Pay $1,800 in quarterly interest on the SBA loan (6% × $120,000 ÷ 4 quarters). Reduces net income and cash.",
+        changes:{ is_interest:1800, is_net_income:-1800, bs_cash:-1800, bs_equity:-1800, cf_cfo:-1800 } },
+    ]
+  },
+  {
+    id: 'manufacturer',
+    name: 'Westfield Tools — annual cycle',
+    desc: 'A small-cap manufacturer goes through one year of operations: purchasing raw materials, producing inventory, billing customers, and managing debt.',
+    transactions: [
+      { id:1, title:'Buy raw materials on credit',    amount:'+$240,000 inventory',
+        desc:"Order $240,000 of steel and components from suppliers on net-60 terms. Inventory rises; accounts payable (current liability) rises.",
+        changes:{ bs_inventory:240000, bs_cl:240000, bs_total_liabilities:240000 } },
+      { id:2, title:'Pay suppliers',                  amount:'−$240,000',
+        desc:"Pay off the supplier invoices in cash 60 days later. Cash and current liabilities both go down.",
+        changes:{ bs_cash:-240000, bs_cl:-240000, bs_total_liabilities:-240000, cf_cfo:-240000 } },
+      { id:3, title:'Produce and sell goods',         amount:'+$650,000 sales',
+        desc:"Convert $400,000 of inventory into $650,000 in finished goods sold to customers. Recognizes $250,000 gross profit.",
+        changes:{ is_revenue:650000, is_cogs:400000, bs_inventory:-400000, bs_ar:650000, bs_equity:250000 } },
+      { id:4, title:'Customer collections',           amount:'+$580,000 cash',
+        desc:"Collect $580,000 of outstanding AR. The remaining $70,000 in AR stays on the books.",
+        changes:{ bs_cash:580000, bs_ar:-580000, cf_cfo:580000 } },
+      { id:5, title:'Pay SG&A expenses',              amount:'−$140,000',
+        desc:"Cash payment for sales, general & administrative expenses (rent, salaries, utilities, marketing).",
+        changes:{ is_op_expenses:140000, is_ebit:-140000, is_net_income:-140000, bs_cash:-140000, bs_equity:-140000, cf_cfo:-140000 } },
+      { id:6, title:'Pay interest on debt',           amount:'−$25,000',
+        desc:"Annual interest on a $500,000 long-term loan at 5%. Reduces net income; doesn't touch the principal.",
+        changes:{ is_interest:25000, is_net_income:-25000, bs_cash:-25000, bs_equity:-25000, cf_cfo:-25000 } },
+      { id:7, title:'Income tax payment',             amount:'−$21,000',
+        desc:"Pay corporate tax on the year's profit ($85,000 EBT × 25% rate). Reduces net income and cash.",
+        changes:{ is_net_income:-21000, bs_cash:-21000, bs_equity:-21000, cf_cfo:-21000 } },
+      { id:8, title:'Repay loan principal',           amount:'−$50,000',
+        desc:"Repay $50,000 of the long-term loan principal. Reduces cash and long-term debt. This is a financing outflow — does NOT affect the income statement.",
+        changes:{ bs_cash:-50000, bs_ltd:-50000, bs_total_liabilities:-50000, cf_cff:-50000 } },
+    ]
+  },
+  {
+    id: 'startup_funded',
+    name: 'NorthStar Robotics — Series A funding round',
+    desc: 'A pre-revenue tech startup raises Series A capital, builds out infrastructure, and launches its first product. Watch what happens when a high-burn startup starts generating revenue.',
+    transactions: [
+      { id:1, title:'Series A equity raise',          amount:'+$3,000,000',
+        desc:"Venture investors put in $3M in exchange for preferred shares. Cash and equity both jump. Issues 600,000 new shares.",
+        changes:{ bs_cash:3000000, bs_equity:3000000, cf_cff:3000000 } },
+      { id:2, title:'Buy R&D equipment',              amount:'−$800,000',
+        desc:"Purchase laboratory and prototyping equipment. Investing outflow; equipment appears on balance sheet.",
+        changes:{ bs_cash:-800000, bs_equipment:800000, cf_cfi:-800000 } },
+      { id:3, title:'Hire engineering team',          amount:'−$1,200,000',
+        desc:"Pay one year of engineering salaries ($1.2M). Operating expense — hits income statement and cash.",
+        changes:{ is_op_expenses:1200000, is_ebit:-1200000, is_net_income:-1200000, bs_cash:-1200000, bs_equity:-1200000, cf_cfo:-1200000 } },
+      { id:4, title:'First product sales',            amount:'+$450,000',
+        desc:"Launch product, generate $450,000 in cash sales (no inventory cost — software product). All revenue flows to gross profit.",
+        changes:{ is_revenue:450000, bs_cash:450000, bs_equity:450000, cf_cfo:450000 } },
+      { id:5, title:'Marketing and sales spend',      amount:'−$250,000',
+        desc:"Spend $250,000 on marketing campaigns and sales team. Operating expense in cash.",
+        changes:{ is_op_expenses:250000, is_ebit:-250000, is_net_income:-250000, bs_cash:-250000, bs_equity:-250000, cf_cfo:-250000 } },
+      { id:6, title:'Convertible note from VC',       amount:'+$500,000',
+        desc:"Take a $500,000 convertible note (debt now, may convert to equity later). Increases long-term debt.",
+        changes:{ bs_cash:500000, bs_ltd:500000, bs_total_liabilities:500000, cf_cff:500000 } },
+      { id:7, title:'Pay interest on note',           amount:'−$15,000',
+        desc:"Pay 3% interest on the convertible note ($15,000). Income statement and cash impact.",
+        changes:{ is_interest:15000, is_net_income:-15000, bs_cash:-15000, bs_equity:-15000, cf_cfo:-15000 } },
+    ]
+  },
+  {
+    id: 'retail',
+    name: 'Coastline Apparel — holiday season',
+    desc: 'A boutique retailer prepares for the busiest quarter of the year. Heavy inventory build-up, big sales push, and managing working capital under pressure.',
+    transactions: [
+      { id:1, title:'Stock up for holiday season',    amount:'+$320,000 inventory',
+        desc:"Order $320,000 of seasonal inventory on supplier credit (net-45 terms). Inventory and current liabilities both rise.",
+        changes:{ bs_inventory:320000, bs_cl:320000, bs_total_liabilities:320000 } },
+      { id:2, title:'Open pop-up locations',          amount:'−$45,000',
+        desc:"Lease and fit out two pop-up stores for the season. Cash payment for short-term rent and setup. Operating expense.",
+        changes:{ is_op_expenses:45000, is_ebit:-45000, is_net_income:-45000, bs_cash:-45000, bs_equity:-45000, cf_cfo:-45000 } },
+      { id:3, title:'Black Friday sales',             amount:'+$420,000',
+        desc:"Holiday weekend brings $420,000 in cash sales. Cost of goods: $200,000 (inventory used). Gross profit: $220,000.",
+        changes:{ is_revenue:420000, is_cogs:200000, bs_inventory:-200000, bs_cash:420000, bs_equity:220000, cf_cfo:420000 } },
+      { id:4, title:'December sales (mixed)',         amount:'+$380,000',
+        desc:"December brings $380,000 in sales — half cash, half customer credit. Cost of goods: $180,000.",
+        changes:{ is_revenue:380000, is_cogs:180000, bs_inventory:-180000, bs_cash:190000, bs_ar:190000, bs_equity:200000, cf_cfo:190000 } },
+      { id:5, title:'Pay seasonal staff',             amount:'−$95,000',
+        desc:"Pay holiday season staff wages. Operating expense and cash outflow.",
+        changes:{ is_op_expenses:95000, is_ebit:-95000, is_net_income:-95000, bs_cash:-95000, bs_equity:-95000, cf_cfo:-95000 } },
+      { id:6, title:'Pay supplier invoices',          amount:'−$320,000',
+        desc:"Pay back the $320,000 of supplier credit from transaction 1. Cash and current liabilities both drop.",
+        changes:{ bs_cash:-320000, bs_cl:-320000, bs_total_liabilities:-320000, cf_cfo:-320000 } },
+      { id:7, title:'Returns processed',              amount:'−$25,000',
+        desc:"Customers return $25,000 of goods (8% return rate). Reverses revenue, COGS comes back as inventory.",
+        changes:{ is_revenue:-25000, is_cogs:-12000, bs_inventory:12000, bs_cash:-25000, bs_equity:-13000, cf_cfo:-25000 } },
+    ]
+  },
+];
+
+let activeScenarioId = SCENARIOS[0].id;
+const TRANSACTIONS = SCENARIOS[0].transactions;  // Will be reassigned on scenario switch
+
+// Running state for walkthrough
+let wtState = {
+  posted: new Set(),
+  is: { revenue:0, cogs:0, gross_profit:0, op_expenses:0, ebit:0, interest:0, net_income:0 },
+  bs: { cash:0, ar:0, inventory:0, current_assets:0, total_assets:0, cl:0, total_liabilities:0, equity:0, ltd:0, equipment:0 },
+  cf: { cfo:0, cfi:0, cff:0 }
+};
+
+// Per-scenario hide-ratios state
+let wtRatiosHidden = false;
+
+function getCurrentScenario() {
+  return SCENARIOS.find(s => s.id === activeScenarioId);
+}
+
+function switchScenario(id) {
+  activeScenarioId = id;
+  resetWt();  // resets posted set + statements
+  renderScenarioPicker();
+  renderTxnList();
+}
+
+function renderScenarioPicker() {
+  const wrap = document.getElementById('scenario-picker');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  SCENARIOS.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'scen-btn' + (s.id === activeScenarioId ? ' active' : '');
+    btn.textContent = s.name;
+    btn.onclick = () => switchScenario(s.id);
+    wrap.appendChild(btn);
+  });
+  // Update scenario description
+  const descEl = document.getElementById('scenario-desc');
+  if (descEl) descEl.textContent = getCurrentScenario().desc;
+}
+
+function initWalkthrough() {
+  renderScenarioPicker();
+  renderTxnList();
+  renderWtStatements();
+  renderWtRatios();
+}
+
+function renderTxnList() {
+  const list = document.getElementById('txn-list');
+  list.innerHTML = '';
+  const txns = getCurrentScenario().transactions;
+  txns.forEach(t => {
+    const div = document.createElement('div');
+    const isPosted = wtState.posted.has(t.id);
+    div.className = 'txn-item' + (isPosted?' posted':'');
+    div.onclick = () => toggleTxn(t.id);
+    div.innerHTML = `
+      <div class="txn-header">
+        <div class="txn-num">${isPosted ? '✓' : t.id}</div>
+        <div class="txn-title">${t.title}</div>
+        <div class="txn-amount">${t.amount}</div>
+      </div>
+      <div class="txn-detail">
+        <p>${t.desc}</p>
+      </div>`;
+    list.appendChild(div);
+  });
+
+  const postAllBtn = document.createElement('button');
+  postAllBtn.className = 'post-all-btn';
+  postAllBtn.textContent = 'Post all transactions';
+  postAllBtn.onclick = postAll;
+  list.appendChild(postAllBtn);
+
+  const resetBtn = document.createElement('button');
+  resetBtn.className = 'reset-btn';
+  resetBtn.textContent = 'Reset';
+  resetBtn.onclick = resetWt;
+  list.appendChild(resetBtn);
+}
+
+function toggleTxn(id) {
+  const t = getCurrentScenario().transactions.find(x=>x.id===id);
+  if (wtState.posted.has(id)) {
+    applyChanges(t.changes, -1);
+    wtState.posted.delete(id);
+    renderTxnList();
+    renderWtStatements();
+    renderWtRatios();
+  } else {
+    applyChanges(t.changes, 1);
+    wtState.posted.add(id);
+    renderTxnList();
+    renderWtStatements(t.changes);
+    renderWtRatios();
+  }
+}
+
+function postAll() {
+  getCurrentScenario().transactions.forEach(t => {
+    if (!wtState.posted.has(t.id)) { applyChanges(t.changes, 1); wtState.posted.add(t.id); }
+  });
+  renderTxnList();
+  renderWtStatements();
+  renderWtRatios();
+}
+
+function resetWt() {
+  wtState = { posted: new Set(),
+    is: { revenue:0, cogs:0, gross_profit:0, op_expenses:0, ebit:0, interest:0, net_income:0 },
+    bs: { cash:0, ar:0, inventory:0, current_assets:0, total_assets:0, cl:0, total_liabilities:0, equity:0, ltd:0, equipment:0 },
+    cf: { cfo:0, cfi:0, cff:0 }
+  };
+  renderTxnList();
+  renderWtStatements();
+  renderWtRatios();
+}
+
+function applyChanges(changes, sign) {
+  const s = sign || 1;
+  // Income statement
+  if (changes.is_revenue)       { wtState.is.revenue += s*changes.is_revenue; wtState.is.gross_profit += s*changes.is_revenue; wtState.is.ebit += s*changes.is_revenue; wtState.is.net_income += s*changes.is_revenue; }
+  if (changes.is_cogs)          { wtState.is.cogs += s*changes.is_cogs; wtState.is.gross_profit -= s*changes.is_cogs; wtState.is.ebit -= s*changes.is_cogs; wtState.is.net_income -= s*changes.is_cogs; }
+  if (changes.is_op_expenses)   { wtState.is.op_expenses += s*changes.is_op_expenses; }
+  if (changes.is_ebit)          { wtState.is.ebit += s*changes.is_ebit; }
+  if (changes.is_interest)      { wtState.is.interest += s*changes.is_interest; }
+  if (changes.is_net_income)    { wtState.is.net_income += s*changes.is_net_income; }
+  // Balance sheet
+  if (changes.bs_cash)          { wtState.bs.cash += s*changes.bs_cash; wtState.bs.current_assets += s*changes.bs_cash; wtState.bs.total_assets += s*changes.bs_cash; }
+  if (changes.bs_ar)            { wtState.bs.ar += s*changes.bs_ar; wtState.bs.current_assets += s*changes.bs_ar; wtState.bs.total_assets += s*changes.bs_ar; }
+  if (changes.bs_inventory)     { wtState.bs.inventory += s*changes.bs_inventory; wtState.bs.current_assets += s*changes.bs_inventory; wtState.bs.total_assets += s*changes.bs_inventory; }
+  if (changes.bs_equipment)     { wtState.bs.equipment += s*changes.bs_equipment; wtState.bs.total_assets += s*changes.bs_equipment; }
+  if (changes.bs_equity)        { wtState.bs.equity += s*changes.bs_equity; }
+  if (changes.bs_cl)            { wtState.bs.cl += s*changes.bs_cl; }
+  if (changes.bs_ltd)           { wtState.bs.ltd += s*changes.bs_ltd; }
+  if (changes.bs_total_liabilities) { wtState.bs.total_liabilities += s*changes.bs_total_liabilities; }
+  // Cash flow
+  if (changes.cf_cfo)           { wtState.cf.cfo += s*changes.cf_cfo; }
+  if (changes.cf_cfi)           { wtState.cf.cfi += s*changes.cf_cfi; }
+  if (changes.cf_cff)           { wtState.cf.cff += s*changes.cf_cff; }
+}
+
+function renderWtStatements(lastChanges) {
+  const lastKeys = lastChanges ? Object.keys(lastChanges) : [];
+  const isHighlighted = (key) => lastKeys.some(k => k.startsWith(key));
+
+  const isLines = [
+    { key:'revenue',     label:'Sales',                 section:'is_revenue' },
+    { key:'cogs',        label:'Cost of goods sold',      section:'is_cogs' },
+    { key:'gross_profit',label:'Gross profit',            section:null, total:true },
+    { key:'op_expenses', label:'Operating expenses',      section:'is_op_expenses' },
+    { key:'ebit',        label:'Operating income (EBIT)', section:'is_ebit', total:true },
+    { key:'interest',    label:'Interest expense',        section:'is_interest' },
+    { key:'net_income',  label:'Net income',              section:'is_net_income', total:true },
+  ];
+  const bsLines = [
+    { key:'cash',             label:'Cash',                section:'bs_cash' },
+    { key:'ar',               label:'Accounts receivable', section:'bs_ar' },
+    { key:'inventory',        label:'Inventory',           section:'bs_inventory' },
+    { key:'current_assets',   label:'Total current assets',section:null, total:true },
+    { key:'equipment',        label:'Equipment',           section:'bs_equipment' },
+    { key:'total_assets',     label:'Total assets',        section:null, total:true },
+    { key:'cl',               label:'Current liabilities', section:'bs_cl' },
+    { key:'total_liabilities',label:'Total liabilities',   section:'bs_total_liabilities', total:true },
+    { key:'equity',           label:'Total equity',        section:'bs_equity', total:true },
+    { key:'ltd',              label:'Long-term debt',      section:'bs_ltd' },
+  ];
+  const cfLines = [
+    { key:'cfo', label:'Cash from operations', section:'cf_cfo' },
+    { key:'cfi', label:'Cash from investing',  section:'cf_cfi' },
+    { key:'cff', label:'Cash from financing',  section:'cf_cff' },
+  ];
+
+  function buildCard(title, lines, dataObj) {
+    let rows = '';
+    lines.forEach(l => {
+      const v = dataObj[l.key] || 0;
+      const hi = lastChanges && l.section && lastKeys.includes(l.section);
+      const delta = hi ? (lastChanges[l.section] >= 0 ? `<span class="wl-delta pos">+${fmtMoney(lastChanges[l.section])}</span>` : `<span class="wl-delta neg">${fmtMoney(lastChanges[l.section])}</span>`) : '';
+      rows += `<div class="wt-line${l.total?' total':''}${hi?' highlighted':''}">
+        <span class="wl-name">${l.label}</span>
+        <span class="wl-val">${fmtMoney(v)}${delta}</span>
+      </div>`;
+    });
+    return `<div class="wt-fs-card"><h4>${title}</h4>${rows}</div>`;
+  }
+
+  document.getElementById('wt-fs-grid').innerHTML =
+    buildCard('Income Statement', isLines, wtState.is) +
+    buildCard('Balance Sheet', bsLines, wtState.bs) +
+    buildCard('Cash Flow Statement', cfLines, wtState.cf);
+}
+
+function renderWtRatios() {
+  const d = {
+    is: { revenue: wtState.is.revenue, cogs: wtState.is.cogs, gross_profit: wtState.is.gross_profit, ebit: wtState.is.ebit, interest: wtState.is.interest||0, net_income: wtState.is.net_income },
+    bs: { cash: wtState.bs.cash, ar: wtState.bs.ar||0, inventory: wtState.bs.inventory||0, current_assets: wtState.bs.current_assets, total_assets: wtState.bs.total_assets, cl: wtState.bs.cl||0, total_liabilities: wtState.bs.total_liabilities, equity: wtState.bs.equity, ltd: wtState.bs.ltd },
+    cf: { cfo: wtState.cf.cfo, cfi: wtState.cf.cfi, cff: wtState.cf.cff },
+    shares: { basic: 0, diluted: 0, dividends: 0 }   // walkthrough has no share data
+  };
+  const r = calcRatios(d);
+
+  // Categories shown in walkthrough — exclude per_share since walkthrough has no share data
+  const wtCategories = CATEGORIES.filter(c => c.id !== 'per_share');
+
+  let html = '<thead><tr><th style="width:34%">Ratio</th><th style="width:50%">What it tells you</th><th style="text-align:right;width:16%">Value</th></tr></thead><tbody>';
+
+  wtCategories.forEach(cat => {
+    const catRatios = RATIOS.filter(rt => rt.category === cat.id);
+    if (catRatios.length === 0) return;
+    html += `<tr class="category"><td colspan="3">${cat.name}</td></tr>`;
+    catRatios.forEach(ratio => {
+      const v = r[ratio.id];
+      const stmts = getRatioStatements(ratio);
+      const dotsHtml = stmts.map(s=>`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${FS_COLORS[s]};margin-right:3px;vertical-align:middle;" title="${FS_LABELS[s]}"></span>`).join('');
+      const valDisplay = wtRatiosHidden ? '<span style="color:var(--text-3);font-style:italic">hidden</span>' : fmt(v, ratio.pct, ratio.unit);
+      html += `<tr>
+        <td>
+          <div class="rname-cell">${dotsHtml}${ratio.name}</div>
+          <div class="rformula-cell">${ratio.formula}</div>
+        </td>
+        <td style="color:var(--text-2);">${ratio.def}</td>
+        <td class="val">${valDisplay}</td>
+      </tr>`;
+    });
+  });
+  html += '</tbody>';
+
+  document.getElementById('wt-ratio-table').innerHTML = html;
+
+  // Update the hide/show button state
+  const btn = document.getElementById('wt-hide-btn');
+  if (btn) btn.textContent = wtRatiosHidden ? 'Show ratios' : 'Hide ratios';
+}
+
+function toggleWtRatios() {
+  wtRatiosHidden = !wtRatiosHidden;
+  renderWtRatios();
+}
+
+// ═══════════════════════════════════════════════════
+// MODE SWITCHER
+// ═══════════════════════════════════════════════════
+function setMode(mode) {
+  document.querySelectorAll('.mtab').forEach((b,i) => b.classList.toggle('active', ['example','walkthrough'][i]===mode));
+  document.getElementById('sec-example').classList.toggle('active', mode==='example');
+  document.getElementById('sec-walkthrough').classList.toggle('active', mode==='walkthrough');
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+initExample();
+initWalkthrough();
+</script>
+</body>
+</html>
