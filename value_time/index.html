@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Time Value of Money — BA 1310</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f1efe8;
+    --text: #1a1a1a;
+    --text-2: #5f5e5a;
+    --text-3: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-2: rgba(0,0,0,0.25);
+    --info-bg: #e6f1fb;
+    --info-text: #0c447c;
+    --info-border: #378add;
+    --success-bg: #eaf3de;
+    --success-text: #27500a;
+    --success-border: #7ab648;
+    --error-bg: #fdecea;
+    --error-text: #8b1a12;
+    --error-border: #e05c52;
+    --warn-bg: #fef6e0;
+    --warn-text: #7a5700;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 0.5px solid var(--border); }
+  h1 { font-size: 28px; font-weight: 500; margin: 0 0 0.4rem; letter-spacing: -0.01em; }
+  .subtitle { font-size: 15px; color: var(--text-2); margin: 0; }
+
+  /* tabs */
+  .tabs {
+    display: flex; gap: 4px;
+    margin-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .tab-btn {
+    background: transparent; border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 18px;
+    font-size: 14px; font-weight: 400;
+    color: var(--text-2);
+    cursor: pointer; font-family: inherit;
+    transition: color 0.15s;
+  }
+  .tab-btn.active { border-bottom-color: var(--text); font-weight: 500; color: var(--text); }
+  .tab-btn:hover { color: var(--text); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* problem card */
+  .problem-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 1rem;
+  }
+  .problem-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-3);
+    margin: 0 0 10px;
+  }
+  .problem-text { font-size: 15px; line-height: 1.7; margin: 0 0 16px; }
+
+  /* given items */
+  .given-grid {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 18px;
+  }
+  .given-item {
+    background: var(--surface-2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  .given-item .given-label { color: var(--text-3); font-size: 11px; display: block; margin-bottom: 2px; font-weight: 500; letter-spacing: 0.04em; }
+  .given-item .given-val { font-weight: 500; color: var(--text); }
+
+  /* answer row */
+  .answer-row {
+    display: flex; gap: 8px; align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  .answer-row .input-wrap { flex: 1; min-width: 160px; }
+  .answer-row label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 4px; font-weight: 500; }
+  .answer-row input[type="number"] {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 15px;
+    border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .answer-row input[type="number"]:focus { border-color: var(--info-border); }
+  .btn {
+    padding: 9px 18px; font-size: 13px;
+    background: var(--surface); border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-md);
+    cursor: pointer; font-family: inherit; color: var(--text);
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: var(--text); color: var(--bg);
+    border-color: var(--text);
+  }
+  .btn-primary:hover { background: #333; }
+
+  /* feedback */
+  .feedback {
+    margin-top: 14px;
+    padding: 14px 18px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    line-height: 1.7;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct { background: var(--success-bg); color: var(--success-text); border: 0.5px solid var(--success-border); }
+  .feedback.incorrect { background: var(--error-bg); color: var(--error-text); border: 0.5px solid var(--error-border); }
+  .feedback.close { background: var(--warn-bg); color: var(--warn-text); border: 0.5px solid #e0b040; }
+  .feedback strong { font-weight: 600; }
+
+  /* formula box */
+  .formula-box {
+    background: var(--info-bg);
+    border: 0.5px solid var(--info-border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--info-text);
+    margin-bottom: 1.25rem;
+    line-height: 1.7;
+  }
+  .formula-box code {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(12,68,124,0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* hint/walkthrough */
+  .hint {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.75;
+  }
+  .hint strong { color: var(--text); font-weight: 500; }
+  .hint code {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    background: var(--surface);
+    color: var(--text);
+    padding: 1px 5px;
+    border-radius: 4px;
+    border: 0.5px solid var(--border);
+  }
+
+  .actions-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
+  /* score */
+  .score-bar {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; color: var(--text-2);
+    margin-bottom: 1.25rem;
+  }
+  .score-badge {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 5px 14px;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  .score-badge span { font-weight: 600; color: var(--text); }
+
+  .step { margin: 2px 0; }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #2c2c2a;
+      --surface-2: #3a3a38;
+      --text: #f5f5f0;
+      --text-2: #b4b2a9;
+      --text-3: #888780;
+      --border: rgba(255,255,255,0.15);
+      --border-2: rgba(255,255,255,0.3);
+      --info-bg: #0c2a4a;
+      --info-text: #b5d4f4;
+      --info-border: #378add;
+      --success-bg: #1a3a08;
+      --success-text: #c0dd97;
+      --success-border: #5a9a28;
+      --error-bg: #3a0e0a;
+      --error-text: #f4a09a;
+      --error-border: #a04040;
+      --warn-bg: #3a2a00;
+      --warn-text: #f0d070;
+    }
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 22px; }
+    .answer-row { flex-direction: column; align-items: stretch; }
+    .answer-row .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Time Value of Money</h1>
+  <p class="subtitle">Practice problems — BA 1310</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="fv">Future Value</button>
+  <button class="tab-btn" data-tab="pv">Present Value</button>
+</div>
+
+<!-- ── FV PANEL ── -->
+<div id="panel-fv" class="panel active">
+  <div class="formula-box">
+    <strong>Formula:</strong> &nbsp;<code>FV = PV × (1 + r)<sup>t</sup></code><br>
+    Where <code>PV</code> = present value (principal), <code>r</code> = annual interest rate (decimal), <code>t</code> = time in years
+  </div>
+
+  <div class="score-bar">
+    Score: <span class="score-badge"><span id="fv-correct">0</span> correct / <span id="fv-total">0</span> attempted</span>
+    <button class="btn" id="fv-new" style="margin-left: auto;">New problem</button>
+  </div>
+
+  <div class="problem-card" id="fv-card">
+    <p class="problem-label">Problem</p>
+    <p class="problem-text" id="fv-text"></p>
+    <div class="given-grid" id="fv-givens"></div>
+    <div class="answer-row">
+      <div class="input-wrap">
+        <label for="fv-input">Future Value ($)</label>
+        <input type="number" id="fv-input" placeholder="e.g. 1250.00" step="0.01" min="0">
+      </div>
+      <div class="input-wrap">
+        <label for="fv-interest-input">Total Interest Earned ($)</label>
+        <input type="number" id="fv-interest-input" placeholder="e.g. 250.00" step="0.01" min="0">
+      </div>
+      <button class="btn btn-primary" id="fv-submit">Check answer</button>
+    </div>
+    <div class="feedback" id="fv-feedback"></div>
+    <div class="hint" id="fv-hint" style="display:none"></div>
+    <div class="actions-row" id="fv-actions" style="display:none">
+      <button class="btn btn-primary" id="fv-next">Next problem →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PV PANEL ── -->
+<div id="panel-pv" class="panel">
+  <div class="formula-box">
+    <strong>Formula:</strong> &nbsp;<code>PV = FV / (1 + r)<sup>t</sup></code><br>
+    Where <code>FV</code> = future value, <code>r</code> = annual interest rate (decimal), <code>t</code> = time in years
+  </div>
+
+  <div class="score-bar">
+    Score: <span class="score-badge"><span id="pv-correct">0</span> correct / <span id="pv-total">0</span> attempted</span>
+    <button class="btn" id="pv-new" style="margin-left: auto;">New problem</button>
+  </div>
+
+  <div class="problem-card" id="pv-card">
+    <p class="problem-label">Problem</p>
+    <p class="problem-text" id="pv-text"></p>
+    <div class="given-grid" id="pv-givens"></div>
+    <div class="answer-row">
+      <div class="input-wrap">
+        <label for="pv-input">Your answer (Present Value in $)</label>
+        <input type="number" id="pv-input" placeholder="e.g. 800.00" step="0.01" min="0">
+      </div>
+      <button class="btn btn-primary" id="pv-submit">Check answer</button>
+    </div>
+    <div class="feedback" id="pv-feedback"></div>
+    <div class="hint" id="pv-hint" style="display:none"></div>
+    <div class="actions-row" id="pv-actions" style="display:none">
+      <button class="btn btn-primary" id="pv-next">Next problem →</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+(function() {
+
+  // ── helpers ──────────────────────────────────────────────────────────────
+  function rand(min, max, step) {
+    step = step || 1;
+    const steps = Math.floor((max - min) / step);
+    return min + Math.round(Math.random() * steps) * step;
+  }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function fmt$(n) { return '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+  function fmtPct(r) { return (r * 100).toFixed(1) + '%'; }
+  function round2(n) { return Math.round(n * 100) / 100; }
+
+  // ── FV problem generators ─────────────────────────────────────────────────
+  const fvContexts = [
+    (pv, r, t, fv) => ({
+      text: `You deposit ${fmt$(pv)} in a savings account that earns ${fmtPct(r)} annual interest, compounded annually. How much will you have after ${t} year${t>1?'s':''}?`,
+      context: 'savings account'
+    }),
+    (pv, r, t, fv) => ({
+      text: `A company invests ${fmt$(pv)} in a project expected to grow at ${fmtPct(r)} per year, compounded annually. What is the value of the investment after ${t} year${t>1?'s':''}?`,
+      context: 'investment'
+    }),
+    (pv, r, t, fv) => ({
+      text: `You put ${fmt$(pv)} in a certificate of deposit (CD) earning ${fmtPct(r)} annually, compounded annually. What will the CD be worth at maturity in ${t} year${t>1?'s':''}?`,
+      context: 'CD'
+    }),
+    (pv, r, t, fv) => ({
+      text: `A bond has a face value of ${fmt$(pv)} and earns ${fmtPct(r)} per year compounded annually. If held for ${t} year${t>1?'s':''}, what is the accumulated value?`,
+      context: 'bond'
+    }),
+    (pv, r, t, fv) => ({
+      text: `You lend a friend ${fmt$(pv)} at ${fmtPct(r)} annual interest, compounded annually. If the friend repays you in full after ${t} year${t>1?'s':''}, how much will you receive?`,
+      context: 'loan'
+    }),
+  ];
+
+  function makeFVProblem() {
+    const pvBase = pick([500,1000,1500,2000,2500,3000,5000,7500,10000,12500,15000,20000]);
+    const pv = pvBase;
+    const rOptions = [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.10, 0.12, 0.15];
+    const r = pick(rOptions);
+    const t = rand(1, 10);
+    const fv = round2(pv * Math.pow(1 + r, t));
+    const ctx = pick(fvContexts)(pv, r, t, fv);
+    return { pv, r, t, fv, text: ctx.text };
+  }
+
+  // ── PV problem generators ─────────────────────────────────────────────────
+  const pvContexts = [
+    (fv, r, t, pv) => ({
+      text: `You want to have ${fmt$(fv)} in ${t} year${t>1?'s':''} to pay for college tuition. Your savings account earns ${fmtPct(r)} annually, compounded annually. How much do you need to deposit today?`
+    }),
+    (fv, r, t, pv) => ({
+      text: `A business expects to receive ${fmt$(fv)} from a customer in ${t} year${t>1?'s':''}. If the discount rate is ${fmtPct(r)} per year, what is that payment worth in today's dollars?`
+    }),
+    (fv, r, t, pv) => ({
+      text: `An investment promises to pay ${fmt$(fv)} in ${t} year${t>1?'s':''}. If the required rate of return is ${fmtPct(r)} annually, what is the most you should pay for this investment today?`
+    }),
+    (fv, r, t, pv) => ({
+      text: `You owe ${fmt$(fv)} on a loan that comes due in ${t} year${t>1?'s':''}. If the interest rate is ${fmtPct(r)} per year compounded annually, what lump sum would settle this debt today?`
+    }),
+    (fv, r, t, pv) => ({
+      text: `A government bond will pay ${fmt$(fv)} at maturity in ${t} year${t>1?'s':''}. If comparable bonds yield ${fmtPct(r)} annually, what should you pay for this bond today?`
+    }),
+  ];
+
+  function makePVProblem() {
+    const fvBase = pick([1000,1500,2000,2500,3000,5000,7500,10000,12500,15000,20000,25000,50000]);
+    const fv = fvBase;
+    const rOptions = [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.10, 0.12, 0.15];
+    const r = pick(rOptions);
+    const t = rand(1, 10);
+    const pv = round2(fv / Math.pow(1 + r, t));
+    const ctx = pick(pvContexts)(fv, r, t, pv);
+    return { fv, r, t, pv, text: ctx.text };
+  }
+
+  // ── given pills ───────────────────────────────────────────────────────────
+  function renderGivens(containerId, items) {
+    const el = document.getElementById(containerId);
+    el.innerHTML = '';
+    items.forEach(item => {
+      const d = document.createElement('div');
+      d.className = 'given-item';
+      d.innerHTML = `<span class="given-label">${item.label}</span><span class="given-val">${item.val}</span>`;
+      el.appendChild(d);
+    });
+  }
+
+  // ── FV walkthrough ────────────────────────────────────────────────────────
+  function fvWalkthrough(p, correct) {
+    const multiplier = round2(Math.pow(1 + p.r, p.t));
+    const interest = round2(p.fv - p.pv);
+    const steps = [];
+    steps.push(`<span class="step"><strong>Formula:</strong> FV = PV × (1 + r)<sup>t</sup></span>`);
+    steps.push(`<span class="step"><strong>Substitute:</strong> FV = ${fmt$(p.pv)} × (1 + ${fmtPct(p.r)})<sup>${p.t}</sup></span>`);
+    if (p.t > 1) {
+      steps.push(`<span class="step"><strong>Compute the factor:</strong> (1 + ${p.r})<sup>${p.t}</sup> = (${1+p.r})<sup>${p.t}</sup> ≈ ${multiplier.toFixed(6)}</span>`);
+    }
+    steps.push(`<span class="step"><strong>Future Value:</strong> FV = ${fmt$(p.pv)} × ${multiplier.toFixed(6)} = <strong>${fmt$(p.fv)}</strong></span>`);
+    steps.push(`<span class="step"><strong>Total Interest:</strong> FV − PV = ${fmt$(p.fv)} − ${fmt$(p.pv)} = <strong>${fmt$(interest)}</strong></span>`);
+    if (!correct) {
+      steps.push(`<br><span class="step" style="color: var(--info-text)">💡 <em>Remember:</em> Every year, the <em>entire</em> balance (principal + accumulated interest) earns interest — that's what "compounded annually" means. Total interest = FV − original principal.</span>`);
+    }
+    return steps.join('<br>');
+  }
+
+  // ── PV walkthrough ────────────────────────────────────────────────────────
+  function pvWalkthrough(p, correct) {
+    const divisor = round2(Math.pow(1 + p.r, p.t));
+    const steps = [];
+    steps.push(`<span class="step"><strong>Formula:</strong> PV = FV ÷ (1 + r)<sup>t</sup></span>`);
+    steps.push(`<span class="step"><strong>Substitute:</strong> PV = ${fmt$(p.fv)} ÷ (1 + ${fmtPct(p.r)})<sup>${p.t}</sup></span>`);
+    if (p.t > 1) {
+      steps.push(`<span class="step"><strong>Compute the discount factor:</strong> (1 + ${p.r})<sup>${p.t}</sup> = (${1+p.r})<sup>${p.t}</sup> ≈ ${divisor.toFixed(6)}</span>`);
+    }
+    steps.push(`<span class="step"><strong>Result:</strong> PV = ${fmt$(p.fv)} ÷ ${divisor.toFixed(6)} = <strong>${fmt$(p.pv)}</strong></span>`);
+    if (!correct) {
+      steps.push(`<br><span class="step" style="color: var(--info-text)">💡 <em>Remember:</em> A dollar today is worth <em>more</em> than a dollar in the future. Discounting reverses compounding.</span>`);
+    }
+    return steps.join('<br>');
+  }
+
+  // ── tolerance check ───────────────────────────────────────────────────────
+  function checkAnswer(submitted, correct, tol) {
+    tol = tol || 0.5; // within 50 cents
+    const pctTol = Math.abs(correct) * 0.005; // within 0.5%
+    const tolerance = Math.max(tol, pctTol);
+    const diff = Math.abs(submitted - correct);
+    if (diff <= tolerance) return 'correct';
+    if (diff <= tolerance * 6) return 'close';
+    return 'incorrect';
+  }
+
+  // ── FV state ──────────────────────────────────────────────────────────────
+  let fvProblem = null;
+  let fvScore = { correct: 0, total: 0 };
+  let fvAnswered = false;
+
+  function loadFVProblem() {
+    fvProblem = makeFVProblem();
+    fvAnswered = false;
+    document.getElementById('fv-text').textContent = fvProblem.text;
+    renderGivens('fv-givens', [
+      { label: 'Principal (PV)', val: fmt$(fvProblem.pv) },
+      { label: 'Annual Rate (r)', val: fmtPct(fvProblem.r) },
+      { label: 'Time (t)', val: fvProblem.t + (fvProblem.t === 1 ? ' year' : ' years') },
+    ]);
+    document.getElementById('fv-input').value = '';
+    document.getElementById('fv-interest-input').value = '';
+    document.getElementById('fv-input').disabled = false;
+    document.getElementById('fv-interest-input').disabled = false;
+    document.getElementById('fv-submit').disabled = false;
+    const fb = document.getElementById('fv-feedback');
+    fb.className = 'feedback'; fb.innerHTML = '';
+    document.getElementById('fv-hint').style.display = 'none';
+    document.getElementById('fv-actions').style.display = 'none';
+    document.getElementById('fv-input').focus();
+  }
+
+  document.getElementById('fv-submit').addEventListener('click', () => {
+    if (fvAnswered) return;
+    const rawFV = parseFloat(document.getElementById('fv-input').value);
+    const rawInt = parseFloat(document.getElementById('fv-interest-input').value);
+    if (isNaN(rawFV) || isNaN(rawInt)) {
+      const fb = document.getElementById('fv-feedback');
+      fb.className = 'feedback close show';
+      fb.innerHTML = 'Please fill in both fields before checking.';
+      return;
+    }
+    fvAnswered = true;
+    fvScore.total++;
+    const correctInt = round2(fvProblem.fv - fvProblem.pv);
+    const fvResult = checkAnswer(rawFV, fvProblem.fv);
+    const intResult = checkAnswer(rawInt, correctInt);
+    const bothCorrect = fvResult === 'correct' && intResult === 'correct';
+    const fb = document.getElementById('fv-feedback');
+    if (bothCorrect) {
+      fvScore.correct++;
+      fb.className = 'feedback correct show';
+      fb.innerHTML = `<strong>✓ Both correct!</strong> Future Value = <strong>${fmt$(fvProblem.fv)}</strong> &nbsp;|&nbsp; Total Interest = <strong>${fmt$(correctInt)}</strong>.`;
+    } else {
+      const fvMsg = fvResult === 'correct'
+        ? `FV <strong>✓ ${fmt$(fvProblem.fv)}</strong>`
+        : (fvResult === 'close'
+            ? `FV <strong>≈ close</strong> (exact: <strong>${fmt$(fvProblem.fv)}</strong>, you had ${fmt$(rawFV)})`
+            : `FV <strong>✗</strong> (correct: <strong>${fmt$(fvProblem.fv)}</strong>, you had ${fmt$(rawFV)})`);
+      const intMsg = intResult === 'correct'
+        ? `Interest <strong>✓ ${fmt$(correctInt)}</strong>`
+        : (intResult === 'close'
+            ? `Interest <strong>≈ close</strong> (exact: <strong>${fmt$(correctInt)}</strong>, you had ${fmt$(rawInt)})`
+            : `Interest <strong>✗</strong> (correct: <strong>${fmt$(correctInt)}</strong>, you had ${fmt$(rawInt)})`);
+      const cls = (fvResult === 'close' || intResult === 'close') && fvResult !== 'incorrect' && intResult !== 'incorrect' ? 'close' : 'incorrect';
+      fb.className = `feedback ${cls} show`;
+      fb.innerHTML = `${fvMsg} &nbsp;&nbsp; ${intMsg}. See the step-by-step below.`;
+    }
+    document.getElementById('fv-hint').style.display = 'block';
+    document.getElementById('fv-hint').innerHTML = fvWalkthrough(fvProblem, bothCorrect);
+    document.getElementById('fv-actions').style.display = 'flex';
+    document.getElementById('fv-input').disabled = true;
+    document.getElementById('fv-interest-input').disabled = true;
+    document.getElementById('fv-submit').disabled = true;
+    document.getElementById('fv-correct').textContent = fvScore.correct;
+    document.getElementById('fv-total').textContent = fvScore.total;
+  });
+
+  document.getElementById('fv-next').addEventListener('click', loadFVProblem);
+  document.getElementById('fv-new').addEventListener('click', loadFVProblem);
+
+  document.getElementById('fv-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('fv-interest-input').focus();
+  });
+  document.getElementById('fv-interest-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('fv-submit').click();
+  });
+
+  // ── PV state ──────────────────────────────────────────────────────────────
+  let pvProblem = null;
+  let pvScore = { correct: 0, total: 0 };
+  let pvAnswered = false;
+
+  function loadPVProblem() {
+    pvProblem = makePVProblem();
+    pvAnswered = false;
+    document.getElementById('pv-text').textContent = pvProblem.text;
+    renderGivens('pv-givens', [
+      { label: 'Future Value (FV)', val: fmt$(pvProblem.fv) },
+      { label: 'Annual Rate (r)', val: fmtPct(pvProblem.r) },
+      { label: 'Time (t)', val: pvProblem.t + (pvProblem.t === 1 ? ' year' : ' years') },
+    ]);
+    document.getElementById('pv-input').value = '';
+    document.getElementById('pv-input').disabled = false;
+    document.getElementById('pv-submit').disabled = false;
+    const fb = document.getElementById('pv-feedback');
+    fb.className = 'feedback'; fb.innerHTML = '';
+    document.getElementById('pv-hint').style.display = 'none';
+    document.getElementById('pv-actions').style.display = 'none';
+    document.getElementById('pv-input').focus();
+  }
+
+  document.getElementById('pv-submit').addEventListener('click', () => {
+    if (pvAnswered) return;
+    const raw = parseFloat(document.getElementById('pv-input').value);
+    if (isNaN(raw)) {
+      const fb = document.getElementById('pv-feedback');
+      fb.className = 'feedback close show';
+      fb.innerHTML = 'Please enter a numeric value.';
+      return;
+    }
+    pvAnswered = true;
+    pvScore.total++;
+    const result = checkAnswer(raw, pvProblem.pv);
+    const fb = document.getElementById('pv-feedback');
+    if (result === 'correct') {
+      pvScore.correct++;
+      fb.className = 'feedback correct show';
+      fb.innerHTML = `<strong>✓ Correct!</strong> The present value is <strong>${fmt$(pvProblem.pv)}</strong>.`;
+    } else if (result === 'close') {
+      fb.className = 'feedback close show';
+      fb.innerHTML = `<strong>Almost!</strong> Your answer of <strong>${fmt$(raw)}</strong> is close, but the exact answer is <strong>${fmt$(pvProblem.pv)}</strong>. Check your rounding.`;
+    } else {
+      fb.className = 'feedback incorrect show';
+      fb.innerHTML = `<strong>Not quite.</strong> Your answer was <strong>${fmt$(raw)}</strong>, but the correct answer is <strong>${fmt$(pvProblem.pv)}</strong>. See the step-by-step below.`;
+    }
+    document.getElementById('pv-hint').style.display = 'block';
+    document.getElementById('pv-hint').innerHTML = pvWalkthrough(pvProblem, result === 'correct');
+    document.getElementById('pv-actions').style.display = 'flex';
+    document.getElementById('pv-input').disabled = true;
+    document.getElementById('pv-submit').disabled = true;
+    document.getElementById('pv-correct').textContent = pvScore.correct;
+    document.getElementById('pv-total').textContent = pvScore.total;
+  });
+
+  document.getElementById('pv-next').addEventListener('click', loadPVProblem);
+  document.getElementById('pv-new').addEventListener('click', loadPVProblem);
+
+  document.getElementById('pv-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('pv-submit').click();
+  });
+
+  // ── tabs ──────────────────────────────────────────────────────────────────
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ── init ──────────────────────────────────────────────────────────────────
+  loadFVProblem();
+  loadPVProblem();
+
+})();
+</script>
+</body>
+</html>
