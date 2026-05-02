@@ -128,20 +128,6 @@
   }
   .btn-primary:hover { background: #333; }
 
-  /* back link*/
-  .back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--text-3);
-    text-decoration: none;
-    margin-bottom: 1.5rem;
-    transition: color 0.15s;
-  }
-  .back-link:hover { color: var(--text-2); }
-  .back-link svg { flex-shrink: 0; }
-
   /* feedback */
   .feedback {
     margin-top: 14px;
@@ -260,16 +246,85 @@
 
 <header>
   <h1>Time Value of Money</h1>
-  <p class="subtitle">Practice problems</p>
+  <p class="subtitle">Power Function &#183 Future Value &#183 Present Value</p>
 </header>
 
 <div class="tabs">
-  <button class="tab-btn active" data-tab="fv">Future Value</button>
+  <button class="tab-btn active" data-tab="powers">Powers Primer</button>
+  <button class="tab-btn" data-tab="fv">Future Value</button>
   <button class="tab-btn" data-tab="pv">Present Value</button>
 </div>
 
+<!-- ── POWERS PRIMER PANEL ── -->
+<div id="panel-powers" class="panel active">
+  <div class="formula-box">
+    <strong>What is a power?</strong> &nbsp;<code>bⁿ = b × b × b … (n times)</code><br>
+    <span style="font-size:12px;"><code>b</code> = base &nbsp;·&nbsp; <code>n</code> = exponent &nbsp;·&nbsp; read as "<em>b raised to the power n</em>" or "<em>b to the n</em>"</span>
+  </div>
+
+  <div class="problem-card">
+    <p class="problem-label">The idea</p>
+    <p class="problem-text" style="margin-bottom:10px;">A power is just repeated multiplication. Instead of writing the same number multiplied by itself over and over, we use a small raised number — the <strong>exponent</strong> — to say how many times.</p>
+    <div class="given-grid" style="margin-bottom:0;">
+      <div class="given-item"><span class="given-label">2¹</span><span class="given-val">2 &nbsp;(just 2, once)</span></div>
+      <div class="given-item"><span class="given-label">2²</span><span class="given-val">2 × 2 = 4</span></div>
+      <div class="given-item"><span class="given-label">2³</span><span class="given-val">2 × 2 × 2 = 8</span></div>
+      <div class="given-item"><span class="given-label">2⁴</span><span class="given-val">2 × 2 × 2 × 2 = 16</span></div>
+      <div class="given-item"><span class="given-label">2⁵</span><span class="given-val">2 × 2 × 2 × 2 × 2 = 32</span></div>
+      <div class="given-item"><span class="given-label">2¹⁰</span><span class="given-val">= 1,024</span></div>
+    </div>
+  </div>
+
+  <div class="problem-card">
+    <p class="problem-label">Why decimals work too</p>
+    <p class="problem-text" style="margin-bottom:10px;">The base doesn't have to be a whole number. In the TVM formula the base is <strong>(1 + r)</strong>, which is always a decimal slightly above 1 — for example 1.06 at a 6% rate.</p>
+    <div class="given-grid" style="margin-bottom:0;">
+      <div class="given-item"><span class="given-label">(1.06)¹</span><span class="given-val">= 1.06</span></div>
+      <div class="given-item"><span class="given-label">(1.06)²</span><span class="given-val">1.06 × 1.06 = 1.1236</span></div>
+      <div class="given-item"><span class="given-label">(1.06)³</span><span class="given-val">1.06 × 1.06 × 1.06 ≈ 1.1910</span></div>
+      <div class="given-item"><span class="given-label">(1.06)¹⁰</span><span class="given-val">≈ 1.7908</span></div>
+      <div class="given-item"><span class="given-label">(1.06)²⁰</span><span class="given-val">≈ 3.2071</span></div>
+      <div class="given-item"><span class="given-label">(1.06)³⁰</span><span class="given-val">≈ 5.7435</span></div>
+    </div>
+    <div class="hint" style="margin-top:14px;">
+      Notice how fast (1.06)ⁿ grows. At 6% interest, money roughly <strong>doubles every 12 years</strong> (the "Rule of 72": 72 ÷ 6 = 12). Powers are what drives compound growth — each year you earn interest <em>on your interest</em>.
+    </div>
+  </div>
+
+  <div class="problem-card">
+    <p class="problem-label">Key rules you'll use</p>
+    <div class="given-grid" style="margin-bottom:14px;">
+      <div class="given-item"><span class="given-label">b⁰ = 1</span><span class="given-val">Anything to the power 0 is 1</span></div>
+      <div class="given-item"><span class="given-label">b¹ = b</span><span class="given-val">Power of 1 leaves the number unchanged</span></div>
+      <div class="given-item"><span class="given-label">bᵐ × bⁿ = bᵐ⁺ⁿ</span><span class="given-val">Same base? Add the exponents</span></div>
+      <div class="given-item"><span class="given-label">bᵐ ÷ bⁿ = bᵐ⁻ⁿ</span><span class="given-val">Same base? Subtract the exponents</span></div>
+    </div>
+    <div class="hint">
+      <strong>On your calculator:</strong> the button is usually labelled <code>yˣ</code>, <code>xʸ</code>, or <code>^</code>. To compute (1.06)¹⁰ type <code>1.06</code> then <code>yˣ</code> then <code>10</code> then <code>=</code>. In Excel or Google Sheets use <code>=1.06^10</code>.
+    </div>
+  </div>
+
+  <div class="problem-card">
+    <p class="problem-label">Try it — powers practice</p>
+    <p class="problem-text" id="pow-text" style="margin-bottom:12px;"></p>
+    <div class="answer-row">
+      <div class="input-wrap">
+        <label for="pow-input">Your answer</label>
+        <input type="number" id="pow-input" step="0.0001" placeholder="e.g. 1.3382">
+      </div>
+      <button class="btn btn-primary" id="pow-submit">Check</button>
+      <button class="btn" id="pow-new">New problem</button>
+    </div>
+    <div class="feedback" id="pow-feedback"></div>
+    <div class="hint" id="pow-hint" style="display:none;"></div>
+    <div class="actions-row" id="pow-actions" style="display:none;">
+      <button class="btn btn-primary" id="pow-next">Next →</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── FV PANEL ── -->
-<div id="panel-fv" class="panel active">
+<div id="panel-fv" class="panel">
   <div class="formula-box">
     <strong>Formula:</strong> &nbsp;<code>FV = PV × (1 + r)<sup>t</sup></code><br>
     Where <code>PV</code> = present value (principal), <code>r</code> = annual interest rate (decimal), <code>t</code> = time in years
@@ -618,6 +673,80 @@
     if (e.key === 'Enter') document.getElementById('pv-submit').click();
   });
 
+  // ── Powers practice ───────────────────────────────────────────────────────
+  let powProblem = null;
+  let powAnswered = false;
+
+  const powTemplates = [
+    (b, n, r) => `Calculate: (${b})^${n}`,
+    (b, n, r) => `What is ${b} raised to the power of ${n}?`,
+    (b, n, r) => `An account earns ${Math.round((b-1)*100)}% per year. What is the growth factor after ${n} year${n>1?'s':''}? (i.e. compute (${b})^${n})`,
+    (b, n, r) => `Compute (${b})^${n} — round to 4 decimal places.`,
+  ];
+
+  function makePowProblem() {
+    const bases = [1.03, 1.04, 1.05, 1.06, 1.07, 1.08, 1.10, 1.12, 2, 3];
+    const b = bases[Math.floor(Math.random() * bases.length)];
+    const n = b > 1.5 ? Math.floor(Math.random() * 4) + 2   // 2–5 for whole bases
+                      : Math.floor(Math.random() * 8) + 2;   // 2–9 for decimal bases
+    const result = Math.round(Math.pow(b, n) * 10000) / 10000;
+    const tmpl = powTemplates[Math.floor(Math.random() * powTemplates.length)];
+    return { b, n, result, text: tmpl(b, n) };
+  }
+
+  function loadPowProblem() {
+    powProblem = makePowProblem();
+    powAnswered = false;
+    document.getElementById('pow-text').textContent = powProblem.text;
+    document.getElementById('pow-input').value = '';
+    document.getElementById('pow-input').disabled = false;
+    document.getElementById('pow-submit').disabled = false;
+    const fb = document.getElementById('pow-feedback');
+    fb.className = 'feedback'; fb.innerHTML = '';
+    document.getElementById('pow-hint').style.display = 'none';
+    document.getElementById('pow-actions').style.display = 'none';
+    document.getElementById('pow-input').focus();
+  }
+
+  document.getElementById('pow-submit').addEventListener('click', () => {
+    if (powAnswered || !powProblem) return;
+    const raw = parseFloat(document.getElementById('pow-input').value);
+    if (isNaN(raw)) return;
+    powAnswered = true;
+    const tol = Math.max(0.001, Math.abs(powProblem.result) * 0.005);
+    const correct = Math.abs(raw - powProblem.result) <= tol;
+    const fb = document.getElementById('pow-feedback');
+    // Build step-by-step expansion
+    const steps = [];
+    if (powProblem.n <= 6) {
+      const parts = Array.from({length: powProblem.n}, () => powProblem.b);
+      steps.push(`(${powProblem.b})^${powProblem.n} = ${parts.join(' × ')}`);
+    } else {
+      steps.push(`(${powProblem.b})^${powProblem.n} = ${powProblem.b} multiplied by itself ${powProblem.n} times`);
+    }
+    steps.push(`= <strong>${powProblem.result}</strong>`);
+
+    if (correct) {
+      fb.className = 'feedback correct show';
+      fb.innerHTML = `<strong>✓ Correct!</strong> (${powProblem.b})^${powProblem.n} = <strong>${powProblem.result}</strong>`;
+    } else {
+      fb.className = 'feedback incorrect show';
+      fb.innerHTML = `<strong>Not quite.</strong> You entered <strong>${raw}</strong>. The correct answer is <strong>${powProblem.result}</strong>.`;
+    }
+    const hint = document.getElementById('pow-hint');
+    hint.style.display = 'block';
+    hint.innerHTML = `<strong>Step-by-step:</strong><br>${steps.map(s => `<span class="step">${s}</span>`).join('<br>')}`;
+    document.getElementById('pow-actions').style.display = 'flex';
+    document.getElementById('pow-input').disabled = true;
+    document.getElementById('pow-submit').disabled = true;
+  });
+
+  document.getElementById('pow-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('pow-submit').click();
+  });
+  document.getElementById('pow-next').addEventListener('click', loadPowProblem);
+  document.getElementById('pow-new').addEventListener('click', loadPowProblem);
+
   // ── tabs ──────────────────────────────────────────────────────────────────
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -629,6 +758,7 @@
   });
 
   // ── init ──────────────────────────────────────────────────────────────────
+  loadPowProblem();
   loadFVProblem();
   loadPVProblem();
 
