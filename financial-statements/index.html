@@ -190,6 +190,19 @@
   .btn:hover { background: var(--surface-2); }
   .btn:active { transform: scale(0.98); }
 
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-3);
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--text-2); }
+  .back-link svg { flex-shrink: 0; }
+
   .tabs {
     display: flex;
     gap: 4px;
