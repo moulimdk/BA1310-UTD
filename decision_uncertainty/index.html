@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Under Uncertainty — BA 1310</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f1efe8;
+    --text: #1a1a1a;
+    --text-2: #5f5e5a;
+    --text-3: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-2: rgba(0,0,0,0.25);
+    --info-bg: #e6f1fb;
+    --info-text: #0c447c;
+    --info-border: #378add;
+    --success-bg: #eaf3de;
+    --success-text: #27500a;
+    --success-border: #7ab648;
+    --error-bg: #fdecea;
+    --error-text: #8b1a12;
+    --error-border: #e05c52;
+    --warn-bg: #fef6e0;
+    --warn-text: #7a5700;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 0.5px solid var(--border); }
+  h1 { font-size: 28px; font-weight: 500; margin: 0 0 0.4rem; letter-spacing: -0.01em; }
+  .subtitle { font-size: 15px; color: var(--text-2); margin: 0; }
+
+  /* tabs */
+  .tabs {
+    display: flex; gap: 4px;
+    margin-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border);
+    overflow-x: auto;
+  }
+  .tab-btn {
+    background: transparent; border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 18px;
+    font-size: 14px; font-weight: 400;
+    color: var(--text-2);
+    cursor: pointer; font-family: inherit;
+    transition: color 0.15s;
+    white-space: nowrap;
+    margin-bottom: -1px;
+  }
+  .tab-btn.active { border-bottom-color: var(--text); font-weight: 500; color: var(--text); }
+  .tab-btn:hover { color: var(--text); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* formula box */
+  .formula-box {
+    background: var(--info-bg);
+    border: 0.5px solid var(--info-border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    font-size: 13px; color: var(--info-text);
+    margin-bottom: 1.25rem; line-height: 1.7;
+  }
+  .formula-box code {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 13px; font-weight: 600;
+    background: rgba(12,68,124,0.1);
+    padding: 1px 6px; border-radius: 4px;
+  }
+
+  /* hint box */
+  .hint {
+    margin-top: 14px; padding: 12px 16px;
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
+    font-size: 13px; color: var(--text-2); line-height: 1.75;
+  }
+  .hint strong { color: var(--text); font-weight: 500; }
+  .hint code {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px; background: var(--surface); color: var(--text);
+    padding: 1px 5px; border-radius: 4px; border: 0.5px solid var(--border);
+  }
+
+  /* score bar */
+  .score-bar {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; color: var(--text-2);
+    margin-bottom: 1.25rem; flex-wrap: wrap;
+  }
+  .score-badge {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius-md); padding: 5px 14px;
+    font-size: 13px; font-variant-numeric: tabular-nums;
+  }
+  .score-badge span { font-weight: 600; color: var(--text); }
+
+  /* buttons */
+  .btn {
+    padding: 9px 18px; font-size: 13px;
+    background: var(--surface); border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-md);
+    cursor: pointer; font-family: inherit; color: var(--text);
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .btn-primary:hover { background: #333; }
+
+  /* feedback */
+  .feedback {
+    margin-top: 14px; padding: 14px 18px;
+    border-radius: var(--radius-md);
+    font-size: 14px; line-height: 1.7; display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct { background: var(--success-bg); color: var(--success-text); border: 0.5px solid var(--success-border); }
+  .feedback.incorrect { background: var(--error-bg); color: var(--error-text); border: 0.5px solid var(--error-border); }
+  .feedback.close { background: var(--warn-bg); color: var(--warn-text); border: 0.5px solid #e0b040; }
+  .feedback strong { font-weight: 600; }
+
+  .actions-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .step { margin: 2px 0; display: block; }
+
+  /* problem card */
+  .problem-card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 1rem;
+  }
+  .problem-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-3); margin: 0 0 10px;
+  }
+  .problem-text { font-size: 15px; line-height: 1.7; margin: 0 0 16px; }
+
+  /* EV calculator */
+  .ev-controls {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 1rem; flex-wrap: wrap;
+  }
+  .seg-group {
+    display: flex; border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-md); overflow: hidden;
+  }
+  .seg-btn {
+    background: none; border: none; padding: 7px 16px;
+    font-family: inherit; font-size: 13px;
+    color: var(--text-2); cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .seg-btn + .seg-btn { border-left: 0.5px solid var(--border-2); }
+  .seg-btn.active { background: var(--text); color: var(--bg); font-weight: 500; }
+
+  .outcomes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 10px; margin-bottom: 1.25rem;
+  }
+  .outcome-box {
+    background: var(--surface-2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-md); padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+  .outcome-box:focus-within { border-color: var(--border-2); }
+  .outcome-box .ob-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-3); margin-bottom: 10px;
+  }
+  .ob-field { margin-bottom: 8px; }
+  .ob-field:last-child { margin-bottom: 0; }
+  .ob-field label { font-size: 11px; color: var(--text-3); display: block; margin-bottom: 3px; font-weight: 500; }
+  .ob-field input {
+    width: 100%; padding: 7px 10px;
+    background: var(--surface); border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-md);
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 13px; color: var(--text); outline: none;
+    transition: border-color 0.15s;
+  }
+  .ob-field input:focus { border-color: var(--info-border); }
+  .ob-field input::placeholder { color: var(--text-3); }
+
+  .prob-warning { font-size: 12px; color: var(--error-text); margin-bottom: 10px; display: none; }
+  .prob-warning.show { display: block; }
+
+  .ev-result-area {
+    background: var(--surface-2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-md); padding: 16px 20px;
+    margin-bottom: 1rem; min-height: 72px;
+  }
+  .ev-number {
+    font-size: 28px; font-weight: 600; color: var(--info-text);
+    margin-bottom: 4px; font-variant-numeric: tabular-nums;
+  }
+  .ev-breakdown {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px; color: var(--text-2); line-height: 1.9;
+  }
+
+  .quiz-input-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+  .quiz-input-row label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 4px; font-weight: 500; }
+  .quiz-input-row input[type="number"] {
+    padding: 9px 12px; font-size: 15px; width: 170px;
+    border: 0.5px solid var(--border-2); border-radius: var(--radius-md);
+    font-family: inherit; background: var(--surface); color: var(--text); outline: none;
+    transition: border-color 0.15s;
+  }
+  .quiz-input-row input:focus { border-color: var(--info-border); }
+
+  /* paradox shared */
+  .intro-box {
+    background: var(--surface-2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-md); padding: 14px 18px;
+    font-size: 14px; color: var(--text-2); line-height: 1.75; margin-bottom: 1.5rem;
+  }
+  .intro-box strong { color: var(--text); font-weight: 500; }
+
+  .section-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-3); margin: 0 0 8px;
+  }
+  .q-text { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 1rem; }
+
+  .choice-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 1rem;
+  }
+  .choice-card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg); padding: 16px 18px;
+    cursor: pointer; position: relative;
+    transition: border-color 0.18s, background 0.18s, transform 0.12s;
+    user-select: none;
+  }
+  .choice-card:hover { border-color: var(--border-2); transform: translateY(-1px); }
+  .choice-card.sel-a { border-color: var(--info-border); background: var(--info-bg); }
+  .choice-card.sel-b { border-color: var(--success-border); background: var(--success-bg); }
+  .choice-card.locked { cursor: default; }
+  .choice-card.locked:hover { transform: none; }
+
+  .cc-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-3); margin-bottom: 6px;
+  }
+  .cc-name { font-size: 15px; font-weight: 500; margin-bottom: 10px; }
+  .cc-ev {
+    font-size: 11px; color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+    position: absolute; top: 14px; right: 16px;
+  }
+  .cc-ev.ev-hi { color: var(--info-text); font-weight: 600; }
+
+  .outcome-row {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 4px 0; border-bottom: 0.5px solid var(--border);
+  }
+  .outcome-row:last-child { border-bottom: none; }
+  .or-prob {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px; color: var(--info-text); min-width: 42px; font-weight: 600;
+  }
+  .or-val {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 13px; color: var(--text); flex: 1;
+  }
+  .or-note { font-size: 11px; color: var(--text-3); }
+
+  .section-divider { border: none; border-top: 0.5px solid var(--border); margin: 1.75rem 0; }
+
+  /* vote bar */
+  .vote-bar-wrap { margin-bottom: 1.25rem; display: none; }
+  .vote-bar-label { font-size: 12px; color: var(--text-3); margin-bottom: 5px; }
+  .vote-bar-track {
+    height: 6px; background: var(--surface-2);
+    border: 0.5px solid var(--border);
+    border-radius: 3px; overflow: hidden; margin-bottom: 4px;
+  }
+  .vote-bar-fill { height: 100%; background: var(--info-border); border-radius: 3px; transition: width 0.35s ease; }
+  .vote-bar-nums { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+  /* reveal box */
+  .reveal-box {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg); padding: 20px 24px;
+    margin-top: 1rem; display: none;
+  }
+  .reveal-box.show { display: block; }
+  .reveal-box h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+  .reveal-box p { font-size: 14px; color: var(--text-2); line-height: 1.75; margin-bottom: 8px; }
+  .reveal-box p:last-of-type { margin-bottom: 0; }
+  .reveal-box strong { color: var(--text); font-weight: 500; }
+
+  /* urn */
+  .urn-card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 1rem;
+  }
+  .urn-card .urn-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-3); margin-bottom: 10px;
+  }
+  .balls-wrap { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+  .ball {
+    width: 14px; height: 14px; border-radius: 50%;
+    display: inline-block; border: 0.5px solid rgba(0,0,0,0.15);
+  }
+  .ball.red { background: #d95f5f; }
+  .ball.dark { background: #666; border-color: rgba(0,0,0,0.25); }
+  .ball.unknown { background: var(--surface-2); border: 0.5px dashed var(--border-2); }
+  .urn-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--text-2); }
+  .urn-legend span { display: flex; align-items: center; gap: 5px; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+  .known-tag {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px;
+    background: var(--success-bg); color: var(--success-text);
+    border: 0.5px solid var(--success-border); margin-top: 8px;
+  }
+  .unknown-tag {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px;
+    background: var(--warn-bg); color: var(--warn-text);
+    border: 0.5px solid #e0b040; margin-top: 8px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #2c2c2a;
+      --surface-2: #3a3a38;
+      --text: #f5f5f0;
+      --text-2: #b4b2a9;
+      --text-3: #888780;
+      --border: rgba(255,255,255,0.15);
+      --border-2: rgba(255,255,255,0.3);
+      --info-bg: #0c2a4a;
+      --info-text: #b5d4f4;
+      --info-border: #378add;
+      --success-bg: #1a3a08;
+      --success-text: #c0dd97;
+      --success-border: #5a9a28;
+      --error-bg: #3a0e0a;
+      --error-text: #f4a09a;
+      --error-border: #a04040;
+      --warn-bg: #3a2a00;
+      --warn-text: #f0d070;
+    }
+    .ball.red { background: #c05050; }
+    .ball.dark { background: #777; }
+    .btn-primary:hover { background: #ddddd4; }
+  }
+  @media (max-width: 580px) {
+    h1 { font-size: 22px; }
+    .choice-grid { grid-template-columns: 1fr; }
+    .outcomes-grid { grid-template-columns: 1fr 1fr; }
+    .cc-ev { position: static; display: block; margin-bottom: 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Decision Under Uncertainty</h1>
+  <p class="subtitle">Expected value · Allais paradox · Ellsberg paradox — BA 1310</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="ev">Expected Value</button>
+  <button class="tab-btn" data-tab="allais">Allais Paradox</button>
+  <button class="tab-btn" data-tab="ellsberg">Ellsberg Paradox</button>
+</div>
+
+
+<!-- ══════════════════════════════
+     TAB 1 · EXPECTED VALUE
+══════════════════════════════ -->
+<div id="panel-ev" class="panel active">
+
+  <div class="formula-box">
+    <strong>Formula:</strong> &nbsp;<code>E[X] = p₁·x₁ + p₂·x₂ + … + pₙ·xₙ</code><br>
+    <span style="font-size:12px;">where <code>pᵢ</code> = probability of outcome <em>i</em> &nbsp;·&nbsp; <code>xᵢ</code> = value of outcome <em>i</em> &nbsp;·&nbsp; probabilities must sum to 1</span>
+  </div>
+
+  <!-- Practice quiz -->
+  <div class="score-bar">
+    Score: <span class="score-badge"><span id="ev-score-c">0</span> correct / <span id="ev-score-t">0</span> attempted</span>
+    <button class="btn" id="ev-quiz-new" style="margin-left:auto;">New problem</button>
+  </div>
+
+  <div class="problem-card">
+    <p class="problem-label">Practice Problem</p>
+    <p class="problem-text" id="ev-quiz-text"></p>
+    <div class="outcomes-grid" id="ev-quiz-given"></div>
+    <div class="quiz-input-row">
+      <div>
+        <label for="ev-quiz-input">Your answer for E[X]</label>
+        <input type="number" id="ev-quiz-input" step="0.01" placeholder="e.g. 42.50">
+      </div>
+      <button class="btn btn-primary" id="ev-quiz-submit">Check answer</button>
+    </div>
+    <div class="feedback" id="ev-quiz-feedback"></div>
+    <div class="hint" id="ev-quiz-hint" style="display:none;"></div>
+    <div class="actions-row" id="ev-quiz-actions" style="display:none;">
+      <button class="btn btn-primary" id="ev-quiz-next">Next problem →</button>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════
+     TAB 2 · ALLAIS PARADOX
+══════════════════════════════ -->
+<div id="panel-allais" class="panel">
+
+  <div class="intro-box">
+    <strong>The Allais Paradox</strong> (Maurice Allais, 1953) shows that people systematically violate <strong>Expected Utility Theory</strong>. You will face two separate choice problems. Most people pick a combination that is mathematically inconsistent with any well-behaved utility function. See whether your choices follow expected value — or reveal something deeper about how you reason under risk.
+  </div>
+
+  <div style="margin-bottom:1.25rem;">
+    <p class="section-label">Problem 1</p>
+    <p class="q-text">Choose one of the following lotteries:</p>
+    <div class="choice-grid" id="allais-q1"></div>
+    <div class="vote-bar-wrap" id="allais-bar1">
+      <div class="vote-bar-label">Responses so far — Problem 1</div>
+      <div class="vote-bar-track"><div class="vote-bar-fill" id="allais-b1f" style="width:0%"></div></div>
+      <div class="vote-bar-nums"><span id="allais-p1a">Option A: 0%</span><span id="allais-p1b">Option B: 0%</span></div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <div style="margin-bottom:1.25rem;">
+    <p class="section-label">Problem 2</p>
+    <p class="q-text">Now choose one of these lotteries:</p>
+    <div class="choice-grid" id="allais-q2"></div>
+    <div class="vote-bar-wrap" id="allais-bar2">
+      <div class="vote-bar-label">Responses so far — Problem 2</div>
+      <div class="vote-bar-track"><div class="vote-bar-fill" id="allais-b2f" style="width:0%"></div></div>
+      <div class="vote-bar-nums"><span id="allais-p2a">Option A: 0%</span><span id="allais-p2b">Option B: 0%</span></div>
+    </div>
+  </div>
+
+  <div class="actions-row" id="allais-btn-row" style="display:none;">
+    <button class="btn btn-primary" onclick="allaisReveal()">Reveal explanation</button>
+  </div>
+
+  <div class="reveal-box" id="allais-result">
+    <h3>The Paradox Explained</h3>
+    <p id="allais-your-choice"></p>
+    <p id="allais-ev-summary"></p>
+    <p id="allais-inconsistency"></p>
+    <p><strong>Why it happens:</strong> People overweight certainty. The jump from 99% → 100% feels far more significant than 10% → 11% — even though both are a 1-percentage-point increase. This "certainty effect" is a cornerstone of <strong>Prospect Theory</strong> (Kahneman &amp; Tversky, 1979).</p>
+    <div class="actions-row">
+      <button class="btn" onclick="allaisReset()">↻ Try again</button>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════
+     TAB 3 · ELLSBERG PARADOX
+══════════════════════════════ -->
+<div id="panel-ellsberg" class="panel">
+
+  <div class="intro-box">
+    <strong>The Ellsberg Paradox</strong> (Daniel Ellsberg, 1961) distinguishes <strong>risk</strong> (known probabilities) from <strong>ambiguity</strong> (unknown probabilities). An urn contains 90 balls: exactly 30 are red, and the remaining 60 are some mix of black and yellow — but you are not told the ratio. You will face two bets. Most people's choices reveal <strong>ambiguity aversion</strong> — a systematic preference for known odds over unknown ones.
+  </div>
+
+  <div class="urn-card">
+    <div class="urn-title" id="ell-urn-title">The Urn</div>
+    <div class="balls-wrap" id="ell-balls"></div>
+    <div class="urn-legend" id="ell-legend"></div>
+  </div>
+
+  <div style="margin-bottom:1.25rem;">
+    <p class="section-label">Problem 1</p>
+    <p class="q-text" id="ell-q1-text"></p>
+    <div class="choice-grid" id="ell-q1"></div>
+    <div class="vote-bar-wrap" id="ell-bar1">
+      <div class="vote-bar-label">Responses so far — Problem 1</div>
+      <div class="vote-bar-track"><div class="vote-bar-fill" id="ell-b1f" style="width:0%"></div></div>
+      <div class="vote-bar-nums"><span id="ell-p1a">Bet A: 0%</span><span id="ell-p1b">Bet B: 0%</span></div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <div style="margin-bottom:1.25rem;">
+    <p class="section-label">Problem 2</p>
+    <p class="q-text" id="ell-q2-text"></p>
+    <div class="choice-grid" id="ell-q2"></div>
+    <div class="vote-bar-wrap" id="ell-bar2">
+      <div class="vote-bar-label">Responses so far — Problem 2</div>
+      <div class="vote-bar-track"><div class="vote-bar-fill" id="ell-b2f" style="width:0%"></div></div>
+      <div class="vote-bar-nums"><span id="ell-p2a">Bet C: 0%</span><span id="ell-p2b">Bet D: 0%</span></div>
+    </div>
+  </div>
+
+  <div class="actions-row" id="ell-btn-row" style="display:none;">
+    <button class="btn btn-primary" onclick="ellReveal()">Reveal explanation</button>
+  </div>
+
+  <div class="reveal-box" id="ell-result">
+    <h3>The Paradox Explained</h3>
+    <p id="ell-your-choice"></p>
+    <p id="ell-inconsistency"></p>
+    <p><strong>Why it happens:</strong> People are <strong>ambiguity averse</strong> — they dislike uncertainty about probabilities themselves, separate from uncertainty about outcomes. This violates Savage's <strong>Sure-Thing Principle</strong> and Subjective Expected Utility Theory.</p>
+    <p><strong>Real-world relevance:</strong> Ambiguity aversion explains under-investment in unfamiliar asset classes, reluctance to adopt novel business strategies, and why people pay a premium for transparent, well-defined insurance policies over opaque ones.</p>
+    <div class="actions-row">
+      <button class="btn" onclick="ellReset()">↻ Try again</button>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ══════════════════════════════
+// EXPECTED VALUE
+// ══════════════════════════════
+(function() {
+  let evScore = { c: 0, t: 0 };
+  let quizProblem = null;
+  let quizAnswered = false;
+
+  function randProbs(n) {
+    const cuts = Array.from({length: n-1}, () => Math.random()).sort((a,b) => a-b);
+    const probs = [];
+    let prev = 0;
+    cuts.forEach(c => { probs.push(Math.round((c-prev)*100)/100); prev = c; });
+    probs.push(Math.round((1-prev)*100)/100);
+    const diff = Math.round((1 - probs.reduce((a,b) => a+b, 0))*100)/100;
+    probs[0] = Math.round((probs[0]+diff)*100)/100;
+    return probs;
+  }
+
+  // ── Quiz ──
+  const quizTemplates = [
+    'A game show contestant spins a wheel with the following payoffs. What is the expected value of one spin?',
+    'An investment has the following possible returns next year. What is the expected return?',
+    'A project has the following possible profit outcomes. What is the expected profit?',
+    'An insurance policy has the following possible payouts. What is the expected payout?',
+    'A lottery ticket offers the following prizes. What is the expected value of one ticket?',
+    'A sales rep estimates the following outcomes for a new deal. What is the expected revenue?',
+    'A startup has the following possible valuations in three years. What is the expected value?',
+  ];
+
+  function genQuiz() {
+    const n = [2,3,4][Math.floor(Math.random()*3)];
+    const probs = randProbs(n);
+    const vals = Array.from({length: n}, () => Math.round((Math.random()*490+10)/10)*10);
+    const ev = Math.round(vals.reduce((acc,v,i) => acc + v*probs[i], 0)*100)/100;
+    return { n, probs, vals, ev, text: quizTemplates[Math.floor(Math.random()*quizTemplates.length)] };
+  }
+
+  function loadQuiz() {
+    quizProblem = genQuiz();
+    quizAnswered = false;
+    document.getElementById('ev-quiz-text').textContent = quizProblem.text;
+    const given = document.getElementById('ev-quiz-given');
+    given.innerHTML = '';
+    for (let i = 0; i < quizProblem.n; i++) {
+      const d = document.createElement('div');
+      d.className = 'outcome-box';
+      d.style.pointerEvents = 'none';
+      d.innerHTML = `
+        <div class="ob-label">Outcome ${i+1}</div>
+        <div style="font-family:ui-monospace,monospace;font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">$${quizProblem.vals[i]}</div>
+        <div style="font-size:12px;color:var(--text-3);">p = ${quizProblem.probs[i].toFixed(2)}</div>`;
+      given.appendChild(d);
+    }
+    document.getElementById('ev-quiz-input').value = '';
+    document.getElementById('ev-quiz-input').disabled = false;
+    document.getElementById('ev-quiz-submit').disabled = false;
+    const fb = document.getElementById('ev-quiz-feedback');
+    fb.className = 'feedback'; fb.innerHTML = '';
+    document.getElementById('ev-quiz-hint').style.display = 'none';
+    document.getElementById('ev-quiz-actions').style.display = 'none';
+    document.getElementById('ev-quiz-input').focus();
+  }
+
+  document.getElementById('ev-quiz-submit').addEventListener('click', () => {
+    if (quizAnswered || !quizProblem) return;
+    const raw = parseFloat(document.getElementById('ev-quiz-input').value);
+    if (isNaN(raw)) {
+      const fb = document.getElementById('ev-quiz-feedback');
+      fb.className = 'feedback close show'; fb.innerHTML = 'Please enter a number.'; return;
+    }
+    quizAnswered = true;
+    evScore.t++;
+    const tol = Math.max(0.5, Math.abs(quizProblem.ev)*0.005);
+    const correct = Math.abs(raw - quizProblem.ev) <= tol;
+    if (correct) evScore.c++;
+    document.getElementById('ev-score-c').textContent = evScore.c;
+    document.getElementById('ev-score-t').textContent = evScore.t;
+
+    const terms = quizProblem.vals.map((v,i) => `(${quizProblem.probs[i].toFixed(2)} × $${v})`).join(' + ');
+    const parts = quizProblem.vals.map((v,i) => '$'+(v*quizProblem.probs[i]).toFixed(2)).join(' + ');
+    const fb = document.getElementById('ev-quiz-feedback');
+    if (correct) {
+      fb.className = 'feedback correct show';
+      fb.innerHTML = `<strong>✓ Correct!</strong> E[X] = ${terms} = ${parts} = <strong>$${quizProblem.ev.toFixed(2)}</strong>`;
+    } else {
+      fb.className = 'feedback incorrect show';
+      fb.innerHTML = `<strong>Not quite.</strong> Your answer: <strong>$${raw.toFixed(2)}</strong>. See the step-by-step below.`;
+    }
+    const hint = document.getElementById('ev-quiz-hint');
+    hint.style.display = 'block';
+    hint.innerHTML = `<strong>Step-by-step:</strong><br>
+      <span class="step">E[X] = ${terms}</span>
+      <span class="step">= ${parts}</span>
+      <span class="step">= <strong>$${quizProblem.ev.toFixed(2)}</strong></span>`;
+    document.getElementById('ev-quiz-actions').style.display = 'flex';
+    document.getElementById('ev-quiz-input').disabled = true;
+    document.getElementById('ev-quiz-submit').disabled = true;
+  });
+
+  document.getElementById('ev-quiz-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('ev-quiz-submit').click();
+  });
+  document.getElementById('ev-quiz-next').addEventListener('click', loadQuiz);
+  document.getElementById('ev-quiz-new').addEventListener('click', loadQuiz);
+
+  loadQuiz();
+})();
+
+
+// ══════════════════════════════
+// ALLAIS
+// ══════════════════════════════
+const allaisState = { q1: null, q2: null };
+const allaisVotes = { q1:{A:0,B:0}, q2:{A:0,B:0} };
+let allaisP = null; // current problem parameters
+
+function fmtM(n) {
+  // Format large numbers nicely: 1000000 -> $1,000,000
+  return '$' + n.toLocaleString('en-US');
+}
+
+function generateAllais() {
+  // Pick a "medium" prize (the certain P1-A amount)
+  const medOptions = [500000, 750000, 1000000, 1500000, 2000000];
+  const med = medOptions[Math.floor(Math.random() * medOptions.length)];
+  // Pick a "large" prize (the jackpot in P1-B and P2-B)
+  const largeMultiples = [4, 5, 6, 8, 10];
+  const large = med * largeMultiples[Math.floor(Math.random() * largeMultiples.length)];
+  // Shared probability p (the "common" chunk that cancels): pick from 85–93%
+  const pSharedOptions = [85, 87, 89, 90, 91, 93];
+  const pShared = pSharedOptions[Math.floor(Math.random() * pSharedOptions.length)];
+  // Jackpot probability in P1-B: small slice, 1–3%
+  const pJackpotOptions = [1, 2, 3];
+  const pJackpot = pJackpotOptions[Math.floor(Math.random() * pJackpotOptions.length)];
+  // pMed in P1-B = 100 - pShared - pJackpot
+  const pMed1B = 100 - pShared - pJackpot;
+
+  // Problem 1:
+  //   A: 100% → med
+  //   B: pShared% → med, pMed1B% → large, pJackpot% → 0
+  // Problem 2 (subtract pShared% → med from each):
+  //   A: (100-pShared)% → med, pShared% → 0  =>  pMed1B% → med, pShared% → 0
+  //   B: pMed1B% → large, (100-pMed1B)% → 0  =>  pMed1B% → large, (pShared+pJackpot)% → 0
+
+  // EV calculations
+  const ev1A = med;
+  const ev1B = (pShared/100)*med + (pMed1B/100)*large + (pJackpot/100)*0;
+  const ev2A = (pMed1B/100)*med;
+  const ev2B = (pMed1B/100)*large;
+
+  return { med, large, pShared, pJackpot, pMed1B, ev1A, ev1B, ev2A, ev2B };
+}
+
+function buildAllaisCards(p) {
+  const q1 = document.getElementById('allais-q1');
+  const q2 = document.getElementById('allais-q2');
+
+  q1.innerHTML = `
+    <div class="choice-card" data-q="1" data-c="A" onclick="allaisSelect(1,'A')">
+      <div class="cc-label">Option A</div>
+      <div class="cc-name">Certain gain</div>
+      <div class="outcome-row"><span class="or-prob">100%</span><span class="or-val">${fmtM(p.med)}</span></div>
+    </div>
+    <div class="choice-card" data-q="1" data-c="B" onclick="allaisSelect(1,'B')">
+      <div class="cc-label">Option B</div>
+      <div class="cc-name">Risky lottery</div>
+      <div class="outcome-row"><span class="or-prob">${p.pShared}%</span><span class="or-val">${fmtM(p.med)}</span></div>
+      <div class="outcome-row"><span class="or-prob">${p.pMed1B}%</span><span class="or-val">${fmtM(p.large)}</span></div>
+      <div class="outcome-row"><span class="or-prob">${p.pJackpot}%</span><span class="or-val">$0</span></div>
+    </div>`;
+
+  q2.innerHTML = `
+    <div class="choice-card" data-q="2" data-c="A" onclick="allaisSelect(2,'A')">
+      <div class="cc-label">Option A</div>
+      <div class="cc-name">Small chance</div>
+      <div class="outcome-row"><span class="or-prob">${p.pMed1B}%</span><span class="or-val">${fmtM(p.med)}</span></div>
+      <div class="outcome-row"><span class="or-prob">${100 - p.pMed1B}%</span><span class="or-val">$0</span></div>
+    </div>
+    <div class="choice-card" data-q="2" data-c="B" onclick="allaisSelect(2,'B')">
+      <div class="cc-label">Option B</div>
+      <div class="cc-name">Long shot</div>
+      <div class="outcome-row"><span class="or-prob">${p.pMed1B}%</span><span class="or-val">${fmtM(p.large)}</span></div>
+      <div class="outcome-row"><span class="or-prob">${100 - p.pMed1B}%</span><span class="or-val">$0</span></div>
+    </div>`;
+}
+
+function allaisSelect(q, c) {
+  if (document.querySelector('#allais-q'+q+' .choice-card.locked')) return;
+  document.querySelectorAll('#allais-q'+q+' .choice-card').forEach(el => el.classList.remove('sel-a','sel-b'));
+  const prev = allaisState['q'+q];
+  if (prev) allaisVotes['q'+q][prev] = Math.max(0, allaisVotes['q'+q][prev]-1);
+  allaisState['q'+q] = c;
+  allaisVotes['q'+q][c]++;
+  document.querySelector('#allais-q'+q+' [data-c="'+c+'"]').classList.add(c==='A'?'sel-a':'sel-b');
+
+  const barWrap = document.getElementById('allais-bar'+q);
+  barWrap.style.display = 'block';
+  const tot = allaisVotes['q'+q].A + allaisVotes['q'+q].B;
+  const pA = tot ? Math.round(allaisVotes['q'+q].A/tot*100) : 0;
+  document.getElementById('allais-b'+q+'f').style.width = pA+'%';
+  document.getElementById('allais-p'+q+'a').textContent = 'Option A: '+pA+'%';
+  document.getElementById('allais-p'+q+'b').textContent = 'Option B: '+(100-pA)+'%';
+  if (allaisState.q1 && allaisState.q2) document.getElementById('allais-btn-row').style.display = 'flex';
+}
+
+function fmtEV(n) {
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
+
+function allaisReveal() {
+  const c1 = allaisState.q1, c2 = allaisState.q2;
+  const p = allaisP;
+
+  // Show EVs on cards now
+  document.querySelector('#allais-q1 [data-c="A"]').insertAdjacentHTML('afterbegin',
+    '<div class="cc-ev">EV = '+fmtEV(p.ev1A)+'</div>');
+  document.querySelector('#allais-q1 [data-c="B"]').insertAdjacentHTML('afterbegin',
+    '<div class="cc-ev ev-hi">EV = '+fmtEV(p.ev1B)+'</div>');
+  document.querySelector('#allais-q2 [data-c="A"]').insertAdjacentHTML('afterbegin',
+    '<div class="cc-ev">EV = '+fmtEV(p.ev2A)+'</div>');
+  document.querySelector('#allais-q2 [data-c="B"]').insertAdjacentHTML('afterbegin',
+    '<div class="cc-ev ev-hi">EV = '+fmtEV(p.ev2B)+'</div>');
+
+  let msg = 'You chose <strong>Option '+c1+' in Problem 1</strong> and <strong>Option '+c2+' in Problem 2</strong>. ';
+  if (c1==='A' && c2==='B') msg += 'This is the <strong>classic Allais pattern</strong> — and it violates the Independence Axiom of Expected Utility Theory.';
+  else if (c1==='B' && c2==='A') msg += 'This is the reverse Allais pattern — also inconsistent with Expected Utility Theory, though less common.';
+  else if (c1==='B' && c2==='B') msg += 'Consistent with <strong>expected value maximization</strong> — you chose the higher-EV option both times.';
+  else msg += 'Consistent choices (A, A) — though note that Option B had a higher expected value both times.';
+  document.getElementById('allais-your-choice').innerHTML = msg;
+
+  document.getElementById('allais-ev-summary').innerHTML =
+    '<strong>Expected values:</strong> P1-A = '+fmtEV(p.ev1A)+' &nbsp;·&nbsp; P1-B = '+fmtEV(p.ev1B)+
+    ' &nbsp;·&nbsp; P2-A = '+fmtEV(p.ev2A)+' &nbsp;·&nbsp; P2-B = '+fmtEV(p.ev2B)+
+    '. Choosing by EV means B in both problems.';
+
+  document.getElementById('allais-inconsistency').innerHTML =
+    '<strong>The inconsistency:</strong> Most people choose <strong>A in Problem 1 but B in Problem 2</strong>. '+
+    'The two problems differ only by adding a '+p.pShared+'% chance of '+fmtM(p.med)+' to every option in Problem 1. '+
+    'If you genuinely prefer A over B in P1, the <strong>Independence Axiom</strong> of Expected Utility Theory '+
+    'requires you to also prefer A in P2 — the added '+p.pShared+'% is identical across both options and should cancel out. '+
+    'Choosing A then B violates this axiom.';
+
+  document.getElementById('allais-result').classList.add('show');
+  document.getElementById('allais-btn-row').style.display = 'none';
+  document.querySelectorAll('#allais-q1 .choice-card, #allais-q2 .choice-card').forEach(c => c.classList.add('locked'));
+}
+
+function allaisReset() {
+  allaisState.q1 = null; allaisState.q2 = null;
+  // Reset vote counts for fresh problem
+  allaisVotes.q1 = {A:0,B:0}; allaisVotes.q2 = {A:0,B:0};
+  // Generate new numbers and rebuild cards
+  allaisP = generateAllais();
+  buildAllaisCards(allaisP);
+  document.getElementById('allais-bar1').style.display = 'none';
+  document.getElementById('allais-bar2').style.display = 'none';
+  document.getElementById('allais-b1f').style.width = '0%';
+  document.getElementById('allais-b2f').style.width = '0%';
+  document.getElementById('allais-p1a').textContent = 'Option A: 0%';
+  document.getElementById('allais-p1b').textContent = 'Option B: 0%';
+  document.getElementById('allais-p2a').textContent = 'Option A: 0%';
+  document.getElementById('allais-p2b').textContent = 'Option B: 0%';
+  document.getElementById('allais-result').classList.remove('show');
+  document.getElementById('allais-btn-row').style.display = 'none';
+}
+
+// Init on load
+allaisP = generateAllais();
+buildAllaisCards(allaisP);
+
+
+// ══════════════════════════════
+// ELLSBERG
+// ══════════════════════════════
+const ellState  = { q1: null, q2: null };
+const ellVotes  = { q1:{A:0,B:0}, q2:{A:0,B:0} };
+let ellP = null;
+
+function generateEllsberg() {
+  // Total balls: pick from a few natural totals
+  const totalOptions = [60, 90, 120];
+  const total = totalOptions[Math.floor(Math.random() * totalOptions.length)];
+  // Known colour count: exactly 1/3 of total (so the "unknown" is 2/3)
+  const known = total / 3;          // e.g. 20, 30, 40
+  const unknown = total - known;    // e.g. 40, 60, 80
+  // Win prize: pick a round number
+  const prizeOptions = [50, 100, 200, 500];
+  const prize = prizeOptions[Math.floor(Math.random() * prizeOptions.length)];
+  // Colour names: always Red (known), Black & Yellow (unknown)
+  const knownPct = (known / total * 100).toFixed(1);   // "33.3%"
+  const unknownPct = (unknown / total * 100).toFixed(1); // "66.7%"
+  return { total, known, unknown, prize, knownPct, unknownPct };
+}
+
+function buildEllsbergVisual(p) {
+  // Title
+  document.getElementById('ell-urn-title').textContent = 'The Urn — ' + p.total + ' balls total';
+  // Balls
+  const wrap = document.getElementById('ell-balls');
+  wrap.innerHTML = '';
+  for (let i = 0; i < p.known; i++)   { const b = document.createElement('span'); b.className='ball red';     wrap.appendChild(b); }
+  for (let i = 0; i < p.known; i++)   { const b = document.createElement('span'); b.className='ball dark';    wrap.appendChild(b); }
+  for (let i = 0; i < p.known; i++)   { const b = document.createElement('span'); b.className='ball unknown'; wrap.appendChild(b); }
+  // Legend
+  document.getElementById('ell-legend').innerHTML =
+    '<span><span class="leg-dot" style="background:#d95f5f;"></span>'+p.known+' red — known</span>' +
+    '<span><span class="leg-dot" style="background:#666;border:0.5px solid rgba(0,0,0,0.2);"></span>0–'+p.unknown+' black — unknown</span>' +
+    '<span><span class="leg-dot" style="background:var(--surface-2);border:0.5px dashed var(--border-2);"></span>0–'+p.unknown+' yellow — unknown</span>';
+}
+
+function buildEllsbergCards(p) {
+  buildEllsbergVisual(p);
+
+  document.getElementById('ell-q1-text').textContent =
+    'One ball is drawn at random. You win $' + p.prize + ' if it matches your bet. Choose:';
+  document.getElementById('ell-q2-text').textContent =
+    'Same urn, same draw. You win $' + p.prize + ' if the ball matches. Choose:';
+
+  document.getElementById('ell-q1').innerHTML =
+    '<div class="choice-card" data-q="1" data-c="A" onclick="ellSelect(1,\'A\')">' +
+      '<div class="cc-label">Bet A</div>' +
+      '<div class="cc-name">Draw Red</div>' +
+      '<div class="outcome-row"><span class="or-prob">'+p.known+'/'+p.total+'</span><span class="or-val">$'+p.prize+'</span><span class="or-note">win</span></div>' +
+      '<div class="outcome-row"><span class="or-prob">'+p.unknown+'/'+p.total+'</span><span class="or-val">$0</span></div>' +
+      '<div><span class="known-tag">P(win) = '+p.knownPct+'% — known</span></div>' +
+    '</div>' +
+    '<div class="choice-card" data-q="1" data-c="B" onclick="ellSelect(1,\'B\')">' +
+      '<div class="cc-label">Bet B</div>' +
+      '<div class="cc-name">Draw Black</div>' +
+      '<div class="outcome-row"><span class="or-prob">?/'+p.total+'</span><span class="or-val">$'+p.prize+'</span><span class="or-note">win</span></div>' +
+      '<div class="outcome-row"><span class="or-prob">?/'+p.total+'</span><span class="or-val">$0</span></div>' +
+      '<div><span class="unknown-tag">P(win) = unknown</span></div>' +
+    '</div>';
+
+  document.getElementById('ell-q2').innerHTML =
+    '<div class="choice-card" data-q="2" data-c="A" onclick="ellSelect(2,\'A\')">' +
+      '<div class="cc-label">Bet C</div>' +
+      '<div class="cc-name">Draw Red or Yellow</div>' +
+      '<div class="outcome-row"><span class="or-prob">?/'+p.total+'</span><span class="or-val">$'+p.prize+'</span><span class="or-note">win</span></div>' +
+      '<div class="outcome-row"><span class="or-prob">?/'+p.total+'</span><span class="or-val">$0</span></div>' +
+      '<div><span class="unknown-tag">P(win) = unknown</span></div>' +
+    '</div>' +
+    '<div class="choice-card" data-q="2" data-c="B" onclick="ellSelect(2,\'B\')">' +
+      '<div class="cc-label">Bet D</div>' +
+      '<div class="cc-name">Draw Black or Yellow</div>' +
+      '<div class="outcome-row"><span class="or-prob">'+p.unknown+'/'+p.total+'</span><span class="or-val">$'+p.prize+'</span><span class="or-note">win</span></div>' +
+      '<div class="outcome-row"><span class="or-prob">'+p.known+'/'+p.total+'</span><span class="or-val">$0</span></div>' +
+      '<div><span class="known-tag">P(win) = '+p.unknownPct+'% — known</span></div>' +
+    '</div>';
+}
+
+function ellSelect(q, c) {
+  if (document.querySelector('#ell-q'+q+' .choice-card.locked')) return;
+  document.querySelectorAll('#ell-q'+q+' .choice-card').forEach(el => el.classList.remove('sel-a','sel-b'));
+  const prev = ellState['q'+q];
+  if (prev) ellVotes['q'+q][prev] = Math.max(0, ellVotes['q'+q][prev]-1);
+  ellState['q'+q] = c;
+  ellVotes['q'+q][c]++;
+  document.querySelector('#ell-q'+q+' [data-c="'+c+'"]').classList.add(c==='A'?'sel-a':'sel-b');
+
+  const barWrap = document.getElementById('ell-bar'+q);
+  barWrap.style.display = 'block';
+  const tot = ellVotes['q'+q].A + ellVotes['q'+q].B;
+  const pA = tot ? Math.round(ellVotes['q'+q].A/tot*100) : 0;
+  document.getElementById('ell-b'+q+'f').style.width = pA+'%';
+  const lA = q===1 ? 'Bet A' : 'Bet C';
+  const lB = q===1 ? 'Bet B' : 'Bet D';
+  document.getElementById('ell-p'+q+'a').textContent = lA+': '+pA+'%';
+  document.getElementById('ell-p'+q+'b').textContent = lB+': '+(100-pA)+'%';
+  if (ellState.q1 && ellState.q2) document.getElementById('ell-btn-row').style.display = 'flex';
+}
+
+function ellReveal() {
+  const c1 = ellState.q1, c2 = ellState.q2;
+  const p = ellP;
+  const n1 = c1==='A' ? 'Bet A (Red)' : 'Bet B (Black)';
+  const n2 = c2==='A' ? 'Bet C (Red or Yellow)' : 'Bet D (Black or Yellow)';
+  let msg = 'You chose <strong>'+n1+' in Problem 1</strong> and <strong>'+n2+' in Problem 2</strong>. ';
+  if (c1==='A' && c2==='B') msg += 'This is the <strong>classic Ellsberg pattern</strong> — always choosing the known-probability bet, which leads to a logical contradiction.';
+  else if (c1==='B' && c2==='A') msg += 'You showed <strong>ambiguity seeking</strong> — preferring unknown odds both times. This is unusual and also violates Subjective Expected Utility Theory.';
+  else msg += 'Your choices are internally consistent, though the paradox lies in how most people combine these two bets.';
+  document.getElementById('ell-your-choice').innerHTML = msg;
+
+  document.getElementById('ell-inconsistency').innerHTML =
+    '<strong>The inconsistency:</strong> Most people choose <strong>Bet A (Red) in Problem 1</strong> and <strong>Bet D (Black or Yellow) in Problem 2</strong> — always the bet with a known probability. ' +
+    'But this is logically contradictory. The urn has '+p.total+' balls: '+p.known+' red (known) and '+p.unknown+' split between black and yellow (unknown ratio). ' +
+    'If you believe P(Black) &lt; '+p.known+'/'+p.total+', preferring Bet A over Bet B makes sense — but then P(Red + Yellow) &gt; P(Black + Yellow), which means Bet C should beat Bet D. ' +
+    'You cannot consistently prefer known-over-unknown and end up with the A + D combination.';
+
+  document.getElementById('ell-result').classList.add('show');
+  document.getElementById('ell-btn-row').style.display = 'none';
+  document.querySelectorAll('#ell-q1 .choice-card, #ell-q2 .choice-card').forEach(c => c.classList.add('locked'));
+}
+
+function ellReset() {
+  ellState.q1 = null; ellState.q2 = null;
+  ellVotes.q1 = {A:0,B:0}; ellVotes.q2 = {A:0,B:0};
+  ellP = generateEllsberg();
+  buildEllsbergCards(ellP);
+  document.getElementById('ell-bar1').style.display = 'none';
+  document.getElementById('ell-bar2').style.display = 'none';
+  document.getElementById('ell-b1f').style.width = '0%';
+  document.getElementById('ell-b2f').style.width = '0%';
+  document.getElementById('ell-p1a').textContent = 'Bet A: 0%';
+  document.getElementById('ell-p1b').textContent = 'Bet B: 0%';
+  document.getElementById('ell-p2a').textContent = 'Bet C: 0%';
+  document.getElementById('ell-p2b').textContent = 'Bet D: 0%';
+  document.getElementById('ell-result').classList.remove('show');
+  document.getElementById('ell-btn-row').style.display = 'none';
+}
+
+// Init on load
+ellP = generateEllsberg();
+buildEllsbergCards(ellP);
+
+// ══════════════════════════════
+// TABS
+// ══════════════════════════════
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
