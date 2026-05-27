@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Demand from Willingness to Pay — Practice</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f1efe8;
+    --text: #1a1a1a;
+    --text-2: #5f5e5a;
+    --text-3: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-2: rgba(0,0,0,0.25);
+    --info-bg: #e6f1fb;
+    --info-text: #0c447c;
+    --info-border: #378add;
+    --success-bg: #eaf3de;
+    --success-text: #27500a;
+    --success-border: #7ab648;
+    --error-bg: #fdecea;
+    --error-text: #8b1a12;
+    --error-border: #e05c52;
+    --warn-bg: #fef6e0;
+    --warn-text: #7a5700;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 0.5px solid var(--border); }
+  h1 { font-size: 28px; font-weight: 500; margin: 0 0 0.4rem; letter-spacing: -0.01em; }
+  .subtitle { font-size: 15px; color: var(--text-2); margin: 0; }
+
+  /* back link */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-3);
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--text-2); }
+  .back-link svg { flex-shrink: 0; }
+
+  /* formula box */
+  .formula-box {
+    background: var(--info-bg);
+    border: 0.5px solid var(--info-border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    font-size: 13px; color: var(--info-text);
+    margin-bottom: 1.25rem; line-height: 1.7;
+  }
+  .formula-box code {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 13px; font-weight: 600;
+    background: rgba(12,68,124,0.1);
+    padding: 1px 6px; border-radius: 4px;
+  }
+
+  /* score bar */
+  .score-bar {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; color: var(--text-2);
+    margin-bottom: 1.25rem; flex-wrap: wrap;
+  }
+  .score-badge {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius-md); padding: 5px 14px;
+    font-size: 13px; font-variant-numeric: tabular-nums;
+  }
+  .score-badge span { font-weight: 600; color: var(--text); }
+
+  /* buttons */
+  .btn {
+    padding: 9px 18px; font-size: 13px;
+    background: var(--surface); border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-md);
+    cursor: pointer; font-family: inherit; color: var(--text);
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .btn-primary:hover { background: #333; }
+
+  /* segmented control */
+  .seg-group {
+    display: flex; border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-md); overflow: hidden;
+  }
+  .seg-btn {
+    background: none; border: none; padding: 7px 16px;
+    font-family: inherit; font-size: 13px;
+    color: var(--text-2); cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .seg-btn + .seg-btn { border-left: 0.5px solid var(--border-2); }
+  .seg-btn.active { background: var(--text); color: var(--bg); font-weight: 500; }
+
+  /* problem card */
+  .problem-card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 1rem;
+  }
+  .problem-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-3); margin: 0 0 10px;
+  }
+  .problem-text { font-size: 15px; line-height: 1.7; margin: 0 0 16px; color: var(--text-2); }
+  .problem-text strong { color: var(--text); font-weight: 500; }
+
+  /* consumers grid */
+  .consumers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+  }
+  .consumer-box {
+    background: var(--surface-2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-md); padding: 12px 14px 10px;
+  }
+  .consumer-box .cb-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-3); margin-bottom: 4px;
+  }
+  .consumer-box .cb-name {
+    font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 10px;
+  }
+  .wtp-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 4px 0; border-bottom: 0.5px solid var(--border);
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+  }
+  .wtp-row:last-child { border-bottom: none; }
+  .wtp-row .unit { color: var(--text-3); }
+  .wtp-row .amt { color: var(--info-text); font-weight: 600; }
+
+  /* two-column layout for practice */
+  .practice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 16px;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 760px) {
+    .practice-grid { grid-template-columns: 1fr; }
+  }
+
+  /* demand table */
+  table.demand {
+    width: 100%; border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+  table.demand thead th {
+    text-align: left;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-3);
+    padding: 0 12px 8px;
+    border-bottom: 0.5px solid var(--border);
+  }
+  table.demand tbody td {
+    padding: 8px 12px; border-bottom: 0.5px solid var(--border);
+    font-size: 14px;
+  }
+  table.demand tbody tr:last-child td { border-bottom: none; }
+  .price-cell {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 14px; font-weight: 600; color: var(--text);
+  }
+  .price-cell .dollar { color: var(--info-text); margin-right: 1px; }
+  .q-input {
+    width: 78px; padding: 7px 10px;
+    background: var(--surface); border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-md);
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 13px; color: var(--text); outline: none;
+    text-align: center;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .q-input:focus { border-color: var(--info-border); }
+  .q-input.correct {
+    background: var(--success-bg); color: var(--success-text);
+    border-color: var(--success-border);
+  }
+  .q-input.wrong {
+    background: var(--error-bg); color: var(--error-text);
+    border-color: var(--error-border);
+  }
+  .truth-tag {
+    font-size: 11px; color: var(--text-3); font-style: italic;
+    margin-left: 8px;
+  }
+
+  /* graph */
+  .graph-card .graph-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .graph-card .legend {
+    display: flex; gap: 12px;
+    font-size: 11px; color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .legend .sw { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 4px; }
+  .sw.student { background: var(--info-border); }
+  .sw.truth { background: var(--text); }
+  svg.demand-graph { width: 100%; height: auto; display: block; }
+
+  /* feedback */
+  .feedback {
+    margin-top: 14px; padding: 14px 18px;
+    border-radius: var(--radius-md);
+    font-size: 14px; line-height: 1.7; display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct { background: var(--success-bg); color: var(--success-text); border: 0.5px solid var(--success-border); }
+  .feedback.incorrect { background: var(--error-bg); color: var(--error-text); border: 0.5px solid var(--error-border); }
+  .feedback.close { background: var(--warn-bg); color: var(--warn-text); border: 0.5px solid #e0b040; }
+  .feedback strong { font-weight: 600; }
+
+  /* actions */
+  .actions-row {
+    display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap;
+    align-items: center;
+  }
+  .actions-row .spacer { flex: 1; }
+  .actions-row .level-label {
+    font-size: 12px; color: var(--text-3); margin-right: 4px;
+  }
+
+  /* hint */
+  .hint {
+    margin-top: 14px; padding: 12px 16px;
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
+    font-size: 13px; color: var(--text-2); line-height: 1.75;
+  }
+  .hint strong { color: var(--text); font-weight: 500; }
+  .hint code {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px; background: var(--surface); color: var(--text);
+    padding: 1px 5px; border-radius: 4px; border: 0.5px solid var(--border);
+  }
+
+  /* dark mode */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #2c2c2a;
+      --surface-2: #3a3a38;
+      --text: #f5f5f0;
+      --text-2: #b4b2a9;
+      --text-3: #888780;
+      --border: rgba(255,255,255,0.15);
+      --border-2: rgba(255,255,255,0.3);
+      --info-bg: #0c2a4a;
+      --info-text: #b5d4f4;
+      --info-border: #378add;
+      --success-bg: #1a3a08;
+      --success-text: #c0dd97;
+      --success-border: #5a9a28;
+      --error-bg: #3a0e0a;
+      --error-text: #f4a09a;
+      --error-border: #a04040;
+      --warn-bg: #3a2a00;
+      --warn-text: #f0d070;
+    }
+    .btn-primary:hover { background: #ddddd4; }
+  }
+  @media (max-width: 580px) {
+    h1 { font-size: 22px; }
+    .consumers-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <a class="back-link" href="../">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8.5 2.5L4 7L8.5 11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Teaching Tools
+  </a>
+
+<header>
+  <h1>Market Demand from Willingness to Pay</h1>
+  <p class="subtitle">Practice deriving the market demand schedule by horizontally summing individual demands.</p>
+</header>
+
+<div class="formula-box">
+  At any price <code>P</code>, the market quantity demanded is the total count of units,across every consumer,whose willingness to pay is at least <code>P</code>:
+  &nbsp; <code>Q(P) = Σᵢ #{ k : WTPᵢ,ₖ ≥ P }</code>
+</div>
+
+<div class="score-bar">
+  <span class="score-badge">Problem <span id="problemNo">1</span></span>
+  <span class="score-badge">Score <span id="scoreText">—</span></span>
+</div>
+
+<!-- CONSUMERS -->
+<div class="problem-card">
+  <p class="problem-label">Step 1 — The consumers in this market</p>
+  <p class="problem-text">Each consumer lists their <strong>willingness to pay</strong> per unit. They will buy a unit whenever the price is at or below that unit's WTP.</p>
+  <div class="consumers-grid" id="consumers"></div>
+</div>
+
+<!-- PRACTICE: TABLE + GRAPH -->
+<div class="problem-card">
+  <p class="problem-label">Step 2 — Fill in the market demand schedule</p>
+  <p class="problem-text">At each price, enter the <strong>total quantity demanded</strong> by the whole market. The curve plots as you type.</p>
+
+  <div class="practice-grid">
+    <div>
+      <table class="demand">
+        <thead>
+          <tr><th>Price</th><th>Quantity demanded</th></tr>
+        </thead>
+        <tbody id="demandRows"></tbody>
+      </table>
+    </div>
+    <div class="graph-card">
+      <div class="graph-head">
+        <p class="problem-label" style="margin:0">Market demand curve</p>
+        <div class="legend">
+          <span><span class="sw student"></span>your answer</span>
+          <span><span class="sw truth"></span>truth</span>
+        </div>
+      </div>
+      <svg class="demand-graph" id="graph" viewBox="0 0 460 340" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </div>
+
+  <div class="actions-row">
+    <button class="btn btn-primary" id="checkBtn">Check answers</button>
+    <button class="btn" id="revealBtn">Reveal solution</button>
+    <button class="btn" id="newBtn">New problem</button>
+    <span class="spacer"></span>
+    <span class="level-label">Level</span>
+    <div class="seg-group" id="difficulty">
+      <button class="seg-btn active" data-level="easy">Easy</button>
+      <button class="seg-btn" data-level="med">Medium</button>
+      <button class="seg-btn" data-level="hard">Hard</button>
+    </div>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+</div>
+
+<div class="hint">
+  <strong>Tip.</strong> Market demand is a <strong>step function</strong>. As the price falls past a WTP value, the quantity demanded jumps <em>up</em> — by one unit per entry sitting at that WTP. If two consumers happen to share the same WTP, the curve jumps by two units there and so on. To find <code>Q(P)</code>, just count every entry in every consumer's table that is at least <code>P</code>.
+</div>
+
+</div>
+
+<script>
+/* ============================================================
+   Problem generation
+   ============================================================ */
+const NAMES = ["Aria","Bran","Cleo","Dahlia","Eli","Fen","Gus","Hana","Ines","Jules","Kira","Leo","Mira","Niko","Otto","Pia","Rhea","Soren","Tess","Ulla"];
+
+let state = {
+  level: "easy",
+  consumers: [],
+  prices: [],
+  truth: [],
+  revealed: false,
+  problemNo: 1,
+  problemScores: new Map()   // problemNo → fraction correct (0–1)
+};
+
+function pickN(arr, n) {
+  const c = arr.slice();
+  const out = [];
+  for (let i = 0; i < n && c.length; i++) {
+    out.push(c.splice(Math.floor(Math.random() * c.length), 1)[0]);
+  }
+  return out;
+}
+
+function genConsumer(maxUnits) {
+  const units = 1 + Math.floor(Math.random() * maxUnits);
+  let v = 4 + Math.floor(Math.random() * 10);
+  const wtp = [];
+  for (let k = 0; k < units; k++) {
+    wtp.push(v);
+    v -= 1 + Math.floor(Math.random() * 3);
+    if (v < 1) break;
+  }
+  return wtp;
+}
+
+function generate() {
+  let nConsumers, maxUnits, nPrices;
+  if (state.level === "easy")      { nConsumers = 4; maxUnits = 2; nPrices = 5; }
+  else if (state.level === "med")  { nConsumers = 6; maxUnits = 3; nPrices = 6; }
+  else                             { nConsumers = 8; maxUnits = 3; nPrices = 7; }
+
+  const names = pickN(NAMES, nConsumers);
+  const consumers = names.map(n => ({ name: n, wtp: genConsumer(maxUnits) }));
+
+  // Sample a fixed number of prices that span the full WTP range,
+  // from just above the max WTP (so Q = 0 is reachable) down to just
+  // below the min WTP (so the full-market case is reachable).
+  const allWtp = consumers.flatMap(c => c.wtp);
+  const high = Math.max(...allWtp) + 1;
+  const low = Math.max(0, Math.min(...allWtp) - 1);
+
+  const priceSet = new Set();
+  const denom = Math.max(1, nPrices - 1);
+  for (let i = 0; i < nPrices; i++) {
+    const frac = i / denom;
+    priceSet.add(Math.round(high - frac * (high - low)));
+  }
+  const prices = [...priceSet].sort((a, b) => b - a);
+
+  const truth = prices.map(p =>
+    consumers.reduce((sum, c) => sum + c.wtp.filter(w => w >= p).length, 0)
+  );
+
+  state.consumers = consumers;
+  state.prices = prices;
+  state.truth = truth;
+  state.revealed = false;
+}
+
+/* ============================================================
+   Rendering
+   ============================================================ */
+function renderConsumers() {
+  const root = document.getElementById("consumers");
+  root.innerHTML = state.consumers.map((c, idx) => {
+    const rows = c.wtp.map((w, i) =>
+      `<div class="wtp-row"><span class="unit">unit ${i + 1}</span><span class="amt">$${w}</span></div>`
+    ).join("");
+    return `<div class="consumer-box">
+      <div class="cb-name">${c.name}</div>
+      ${rows}
+    </div>`;
+  }).join("");
+}
+
+function renderRows() {
+  const root = document.getElementById("demandRows");
+  root.innerHTML = state.prices.map((p, i) =>
+    `<tr>
+      <td class="price-cell"><span class="dollar">$</span>${p}</td>
+      <td>
+        <input class="q-input" type="number" min="0" data-i="${i}" inputmode="numeric" autocomplete="off"/>
+        <span class="truth-tag" data-truth="${i}"></span>
+      </td>
+    </tr>`
+  ).join("");
+
+  root.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", renderGraph);
+  });
+}
+
+function studentValues() {
+  return state.prices.map((_, i) => {
+    const el = document.querySelector(`input[data-i="${i}"]`);
+    if (!el) return null;
+    const v = el.value.trim();
+    if (v === "") return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  });
+}
+
+function renderGraph() {
+  const svg = document.getElementById("graph");
+  const W = 460, H = 340;
+  const pad = { l: 46, r: 18, t: 18, b: 42 };
+  const plotW = W - pad.l - pad.r;
+  const plotH = H - pad.t - pad.b;
+
+  const maxPrice = Math.max(...state.prices, ...state.consumers.flatMap(c => c.wtp)) + 1;
+  const studentQs = studentValues().filter(v => v != null);
+  const maxQ = Math.max(...state.truth, ...studentQs, 4) + 1;
+
+  const xScale = q => pad.l + (q / maxQ) * plotW;
+  const yScale = p => pad.t + (1 - p / maxPrice) * plotH;
+
+  // Both curves use the same step structure through the asked prices, so
+  // they overlap exactly when every answer is correct.
+  function stepPath(pts) {
+    if (pts.length === 0) return "";
+    let d = `M ${xScale(pts[0].q)} ${yScale(pts[0].p)}`;
+    for (let i = 1; i < pts.length; i++) {
+      d += ` L ${xScale(pts[i].q)} ${yScale(pts[i - 1].p)}`;
+      d += ` L ${xScale(pts[i].q)} ${yScale(pts[i].p)}`;
+    }
+    return d;
+  }
+
+  const truthSeries = state.prices.map((p, i) => ({ p, q: state.truth[i] }))
+    .sort((a, b) => a.p - b.p);
+  const truthPath = stepPath(truthSeries);
+
+  const studentSeries = state.prices.map((p, i) => ({ p, q: studentValues()[i] }))
+    .filter(x => x.q != null)
+    .sort((a, b) => a.p - b.p);
+  const studentPath = stepPath(studentSeries);
+
+  // Grid
+  let grid = "";
+  for (let p = 0; p <= maxPrice; p++) {
+    const y = yScale(p);
+    grid += `<line x1="${pad.l}" y1="${y}" x2="${W - pad.r}" y2="${y}" stroke="currentColor" stroke-opacity="0.07" stroke-width="1"/>`;
+  }
+  for (let qq = 0; qq <= maxQ; qq++) {
+    const x = xScale(qq);
+    grid += `<line x1="${x}" y1="${pad.t}" x2="${x}" y2="${H - pad.b}" stroke="currentColor" stroke-opacity="0.07" stroke-width="1"/>`;
+  }
+
+  // Ticks
+  let ticks = "";
+  const priceStep = Math.max(1, Math.ceil(maxPrice / 8));
+  for (let p = 0; p <= maxPrice; p += priceStep) {
+    const y = yScale(p);
+    ticks += `<line x1="${pad.l - 4}" y1="${y}" x2="${pad.l}" y2="${y}" stroke="currentColor" stroke-width="1"/>`;
+    ticks += `<text x="${pad.l - 8}" y="${y + 4}" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="currentColor" fill-opacity="0.55" text-anchor="end">$${p}</text>`;
+  }
+  const qStep = Math.max(1, Math.ceil(maxQ / 8));
+  for (let qq = 0; qq <= maxQ; qq += qStep) {
+    const x = xScale(qq);
+    ticks += `<line x1="${x}" y1="${H - pad.b}" x2="${x}" y2="${H - pad.b + 4}" stroke="currentColor" stroke-width="1"/>`;
+    ticks += `<text x="${x}" y="${H - pad.b + 18}" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="currentColor" fill-opacity="0.55" text-anchor="middle">${qq}</text>`;
+  }
+
+  const xLabel = `<text x="${pad.l + plotW / 2}" y="${H - 6}" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" fill="currentColor" fill-opacity="0.55" text-anchor="middle">Quantity</text>`;
+  const yLabel = `<text x="14" y="${pad.t + plotH / 2}" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" fill="currentColor" fill-opacity="0.55" text-anchor="middle" transform="rotate(-90 14 ${pad.t + plotH / 2})">Price</text>`;
+
+  const axes = `
+    <line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${H - pad.b}" stroke="currentColor" stroke-opacity="0.55" stroke-width="1"/>
+    <line x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}" stroke="currentColor" stroke-opacity="0.55" stroke-width="1"/>
+  `;
+
+  const truthD = truthPath;
+
+  const truthVisible = state.revealed
+    ? `<path d="${truthD}" fill="none" stroke="currentColor" stroke-opacity="0.9" stroke-width="3" stroke-linejoin="miter" stroke-linecap="square"/>`
+    : "";
+
+  const studentDots = studentSeries.map(s =>
+    `<circle cx="${xScale(s.q)}" cy="${yScale(s.p)}" r="3.5" fill="#378add" stroke="var(--surface)" stroke-width="1.5"/>`
+  ).join("");
+
+  // Drawing order matters: truth (thick, solid) is drawn first so it sits
+  // underneath. Student (thinner, dashed) sits on top. When the two paths
+  // coincide, the truth color shows through the gaps in the dashes —
+  // so both lines remain visible at every overlapping point.
+  svg.innerHTML = `
+    ${grid}
+    ${axes}
+    ${ticks}
+    ${xLabel}
+    ${yLabel}
+    ${truthVisible}
+    ${studentPath ? `<path d="${studentPath}" fill="none" stroke="#378add" stroke-width="1.8" stroke-dasharray="6,5" stroke-linejoin="miter"/>` : ""}
+    ${studentDots}
+  `;
+}
+
+function clearMarks() {
+  document.querySelectorAll(".q-input").forEach(i => i.classList.remove("correct", "wrong"));
+  document.querySelectorAll(".truth-tag").forEach(t => t.textContent = "");
+  const fb = document.getElementById("feedback");
+  fb.classList.remove("show", "correct", "incorrect", "close");
+  fb.innerHTML = "";
+}
+
+function check() {
+  const ans = studentValues();
+  let correct = 0, total = state.prices.length, blank = 0;
+  state.prices.forEach((_, i) => {
+    const el = document.querySelector(`input[data-i="${i}"]`);
+    el.classList.remove("correct", "wrong");
+    if (ans[i] == null) { blank++; return; }
+    if (ans[i] === state.truth[i]) {
+      el.classList.add("correct");
+      correct++;
+    } else {
+      el.classList.add("wrong");
+    }
+  });
+
+  // Per-problem score = correct / total rows. Blanks count as wrong, so
+  // a perfect set of answers gives 1.0 and e.g. 3 of 5 rows right gives 0.6.
+  // The badge shows the average score across every problem attempted;
+  // re-checking the same problem just updates its slot, never double-counts.
+  state.problemScores.set(state.problemNo, correct / total);
+  const scores = [...state.problemScores.values()];
+  const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+  document.getElementById("scoreText").textContent =
+    `${avg.toFixed(2)} · avg of ${scores.length} problem${scores.length === 1 ? "" : "s"}`;
+
+  const fb = document.getElementById("feedback");
+  fb.classList.remove("correct", "incorrect", "close");
+  fb.classList.add("show");
+
+  if (correct === total) {
+    fb.classList.add("correct");
+    fb.innerHTML = `<strong>Perfect — ${correct} / ${total}.</strong> Every step of the curve checks out. Try a new problem, or step up the difficulty.`;
+  } else if (correct >= total - 1 && blank === 0) {
+    fb.classList.add("close");
+    fb.innerHTML = `<strong>So close — ${correct} / ${total}.</strong> Look at the highlighted row: at that price, count every unit (across every consumer) whose WTP is at least the price.`;
+  } else {
+    fb.classList.add("incorrect");
+    const blankNote = blank ? ` &middot; ${blank} blank` : "";
+    fb.innerHTML = `<strong>${correct} / ${total} correct${blankNote}.</strong> For each wrong row, sum the units across all consumers with WTP ≥ price. Click <em>Reveal solution</em> to see the full demand curve.`;
+  }
+}
+
+function reveal() {
+  state.revealed = true;
+  state.prices.forEach((p, i) => {
+    const t = document.querySelector(`.truth-tag[data-truth="${i}"]`);
+    t.textContent = `→ ${state.truth[i]}`;
+  });
+  renderGraph();
+}
+
+function newProblem() {
+  state.problemNo += 1;
+  document.getElementById("problemNo").textContent = state.problemNo;
+  generate();
+  renderConsumers();
+  renderRows();
+  clearMarks();
+  renderGraph();
+}
+
+/* ============================================================
+   Wire-up
+   ============================================================ */
+document.getElementById("checkBtn").addEventListener("click", check);
+document.getElementById("revealBtn").addEventListener("click", reveal);
+document.getElementById("newBtn").addEventListener("click", newProblem);
+
+document.querySelectorAll("#difficulty .seg-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#difficulty .seg-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    state.level = btn.dataset.level;
+    newProblem();
+  });
+});
+
+// Init
+generate();
+renderConsumers();
+renderRows();
+renderGraph();
+</script>
+</body>
+</html>
