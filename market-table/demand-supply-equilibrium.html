@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demand, Supply &amp; Equilibrium — BA 1310</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f1efe8;
+    --text: #1a1a1a;
+    --text-2: #5f5e5a;
+    --text-3: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-2: rgba(0,0,0,0.25);
+    --info-bg: #e6f1fb;
+    --info-text: #0c447c;
+    --correct-bg: #e6f4e7;
+    --correct-text: #2d7a32;
+    --correct-border: rgba(45,122,50,0.35);
+    --wrong-bg: #fdeaea;
+    --wrong-text: #b33a3a;
+    --wrong-border: rgba(179,58,58,0.35);
+    --warn-bg: #fbf2e6;
+    --warn-text: #8a5a17;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .back {
+    font-size: 13px;
+    color: var(--text-3);
+    margin: 0 0 1.5rem;
+  }
+  .back a { color: var(--info-text); text-decoration: none; }
+  .back a:hover { text-decoration: underline; }
+
+  header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .course {
+    font-size: 13px;
+    color: var(--text-3);
+    margin: 0 0 0.25rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: 30px;
+    font-weight: 500;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-2);
+    margin: 0;
+  }
+
+  /* ─── Tabs ─── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 1.75rem;
+  }
+  .tab {
+    background: none;
+    border: none;
+    padding: 10px 16px 12px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text-3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -0.5px;
+    transition: color 0.15s, border-color 0.15s;
+    font-weight: 500;
+  }
+  .tab:hover { color: var(--text-2); }
+  .tab.active {
+    color: var(--info-text);
+    border-bottom-color: var(--info-text);
+    font-weight: 600;
+  }
+
+  /* ─── Score bar ─── */
+  .score {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 12px 18px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 1.25rem;
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .score .stat-label {
+    color: var(--text-3);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    margin-right: 0.4rem;
+  }
+  .score .stat-value { color: var(--text); font-weight: 600; }
+
+  /* ─── Concept card (formula/explanation) ─── */
+  .concept {
+    background: var(--info-bg);
+    color: var(--info-text);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+  .concept code {
+    background: rgba(0,0,0,0.06);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  .concept strong { font-weight: 600; }
+
+  /* ─── Intro / context card (above matrix) ─── */
+  .intro-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+  .intro-card p { margin: 0 0 0.6rem; }
+  .intro-card p:last-child { margin: 0; }
+  .intro-card strong { color: var(--text); font-weight: 600; }
+  .intro-card em { font-style: italic; }
+
+  /* ─── Scenario table card ─── */
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    margin-bottom: 1.25rem;
+  }
+  .card-label {
+    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 500;
+    margin: 0 0 0.75rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .ppf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .ppf-table th, .ppf-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .ppf-table thead th {
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 0.5px solid var(--border-2);
+  }
+  .ppf-table td.numeric, .ppf-table th.numeric { text-align: center; }
+  .ppf-table .country-name { font-weight: 600; color: var(--text); }
+  .ppf-table .big { font-size: 16px; font-weight: 600; }
+  .ppf-table tbody tr:last-child td { border-bottom: none; }
+  .ppf-note {
+    font-size: 12px;
+    color: var(--text-3);
+    margin: 0.75rem 0 0;
+    line-height: 1.5;
+  }
+
+  /* ─── Per-question stats table ─── */
+  .stats-table .qlabel { font-weight: 500; color: var(--text); }
+  .stats-table .dim { color: var(--text-3); }
+  .stats-table .acc-good { color: var(--correct-text); font-weight: 600; }
+  .stats-table .acc-mid  { color: var(--warn-text); font-weight: 600; }
+  .stats-table .acc-bad  { color: var(--wrong-text); font-weight: 600; }
+
+  /* ─── New problem header bar (next to matrix) ─── */
+  .matrix-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+  .matrix-head .card-label { margin: 0; }
+
+  /* ─── Question card ─── */
+  .question {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    margin-bottom: 0.85rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .question.correct {
+    border-color: var(--correct-border);
+    background: var(--correct-bg);
+  }
+  .question.wrong {
+    border-color: var(--wrong-border);
+    background: var(--wrong-bg);
+  }
+  .q-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.85rem;
+  }
+  .q-tag {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: var(--radius-sm);
+    background: var(--info-bg);
+    color: var(--info-text);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .q-text {
+    margin: 0;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .option {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 7px 14px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .option:hover:not(:disabled) {
+    border-color: var(--border-2);
+    background: var(--surface-2);
+  }
+  .option.selected {
+    border-color: var(--info-text);
+    background: var(--info-bg);
+    color: var(--info-text);
+    font-weight: 500;
+  }
+  .option.show-correct {
+    border-color: var(--correct-text);
+    background: var(--correct-bg);
+    color: var(--correct-text);
+    font-weight: 500;
+  }
+  .option.show-wrong {
+    border-color: var(--wrong-text);
+    background: var(--wrong-bg);
+    color: var(--wrong-text);
+    text-decoration: line-through;
+  }
+  .option:disabled { cursor: default; }
+
+  /* ─── Numeric input (free-response question) ─── */
+  .numeric-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .numeric-input {
+    background: var(--surface);
+    border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--text);
+    width: 140px;
+    max-width: 100%;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .numeric-input:focus {
+    outline: none;
+    border-color: var(--info-text);
+    background: var(--info-bg);
+    color: var(--info-text);
+  }
+  .numeric-input:disabled { cursor: default; opacity: 1; }
+  .numeric-input.show-correct {
+    border-color: var(--correct-text);
+    background: var(--correct-bg);
+    color: var(--correct-text);
+    font-weight: 600;
+  }
+  .numeric-input.show-wrong {
+    border-color: var(--wrong-text);
+    background: var(--wrong-bg);
+    color: var(--wrong-text);
+    font-weight: 600;
+  }
+  .numeric-unit {
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  .numeric-hint {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 0.4rem;
+  }
+
+  .explanation {
+    margin-top: 0.85rem;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-2);
+    border-left: 2px solid var(--text-3);
+    background: rgba(0,0,0,0.025);
+  }
+  .explanation.correct {
+    border-left-color: var(--correct-text);
+    background: rgba(45,122,50,0.06);
+  }
+  .explanation.wrong {
+    border-left-color: var(--wrong-text);
+    background: rgba(179,58,58,0.06);
+  }
+  .explanation strong { color: var(--text); font-weight: 600; }
+  .explanation .verdict.correct { color: var(--correct-text); }
+  .explanation .verdict.wrong { color: var(--wrong-text); }
+
+  /* ─── Question-level action row ─── */
+  .q-actions {
+    margin-top: 0.85rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* ─── Action buttons ─── */
+  .btn {
+    background: var(--info-text);
+    color: #fff;
+    border: 0.5px solid var(--info-text);
+    border-radius: var(--radius-md);
+    padding: 10px 20px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, background 0.15s;
+  }
+  .btn:hover:not(:disabled) { opacity: 0.88; }
+  .btn:disabled {
+    background: var(--surface-2);
+    color: var(--text-3);
+    border-color: var(--border);
+    cursor: not-allowed;
+  }
+  .btn.secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 0.5px solid var(--border-2);
+  }
+  .btn.secondary:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+  .btn.small {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+
+  /* ─── Footer ─── */
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 0.5px solid var(--border);
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  footer a { color: var(--info-text); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ─── Animation ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.3s ease both; }
+
+  /* ─── Dark mode ─── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #2c2c2a;
+      --surface-2: #3a3a38;
+      --text: #f5f5f0;
+      --text-2: #b4b2a9;
+      --text-3: #888780;
+      --border: rgba(255,255,255,0.15);
+      --border-2: rgba(255,255,255,0.3);
+      --info-bg: #0c447c;
+      --info-text: #b5d4f4;
+      --correct-bg: rgba(45,122,50,0.18);
+      --correct-text: #8fd297;
+      --correct-border: rgba(143,210,151,0.35);
+      --wrong-bg: rgba(179,58,58,0.18);
+      --wrong-text: #f0a0a0;
+      --wrong-border: rgba(240,160,160,0.35);
+      --warn-bg: rgba(138,90,23,0.18);
+      --warn-text: #e5c489;
+    }
+    .option.show-correct { background: rgba(143,210,151,0.18); }
+    .option.show-wrong { background: rgba(240,160,160,0.18); }
+    .btn { background: var(--info-text); color: #0c447c; border-color: var(--info-text); }
+  }
+
+  /* ─── Mobile ─── */
+  @media (max-width: 600px) {
+    .container { padding: 2rem 1rem 3rem; }
+    h1 { font-size: 24px; }
+    .tab { padding: 10px 10px 12px; font-size: 13px; }
+    .question, .card { padding: 16px 16px; }
+    .ppf-table th, .ppf-table td { padding: 8px 8px; font-size: 13px; }
+    .intro-card { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <p class="back"><a href="../">← Teaching Tools</a></p>
+
+    <header>
+      <p class="course">BA 1310 · UT Dallas</p>
+      <h1>Demand, Supply &amp; Equilibrium</h1>
+      <p class="subtitle">Market schedules · Shifts · Finding equilibrium — practice problems</p>
+    </header>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="equilibrium" role="tab">Finding Equilibrium</button>
+      <button class="tab" data-tab="demand" role="tab">Demand Shifts</button>
+      <button class="tab" data-tab="supply" role="tab">Supply Shifts</button>
+    </div>
+
+    <div class="score" id="score-bar">
+      <div><span class="stat-label">Attempted</span><span class="stat-value" id="s-attempted">0</span></div>
+      <div><span class="stat-label">Correct</span><span class="stat-value" id="s-correct">0</span></div>
+      <div><span class="stat-label">Accuracy</span><span class="stat-value" id="s-accuracy">—</span></div>
+    </div>
+
+    <div id="concept"></div>
+    <div id="content"></div>
+
+    <footer>
+      Part of the <a href="../">BA 1310 teaching tools</a>. Source on <a href="https://github.com/moulimdk/BA1310-UTD">GitHub</a>.
+    </footer>
+  </div>
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   Data + scenario generation
+   ──────────────────────────────────────────────────────────────── */
+const PRODUCTS = [
+  "Widgets", "Coffee", "Bananas", "Smartphones", "Gasoline",
+  "Laptops", "Organic milk", "Notebook paper", "USB drives", "Textbooks"
+];
+
+const PRICE_LEVELS = [5, 10, 15, 20, 25, 30, 35];
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffleArr(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generateScenario() {
+  const product = PRODUCTS[randInt(0, PRODUCTS.length - 1)];
+  const prices = [...PRICE_LEVELS];
+  const n = prices.length;
+
+  // Choose equilibrium roughly in the middle
+  const eqIdx = randInt(2, n - 3);
+  const eqPrice = prices[eqIdx];
+  const eqQuantity = randInt(60, 140);
+
+  // Build QD (decreasing)
+  let qd = new Array(n);
+  qd[eqIdx] = eqQuantity;
+  let q = eqQuantity;
+  for (let i = eqIdx - 1; i >= 0; i--) {
+    q += randInt(18, 28);
+    qd[i] = q;
+  }
+  q = eqQuantity;
+  for (let i = eqIdx + 1; i < n; i++) {
+    q -= randInt(15, 25);
+    qd[i] = Math.max(10, q);
+  }
+
+  // Build QS (increasing)
+  let qs = new Array(n);
+  qs[eqIdx] = eqQuantity;
+  q = eqQuantity;
+  for (let i = eqIdx - 1; i >= 0; i--) {
+    q -= randInt(12, 22);
+    qs[i] = Math.max(5, q);
+  }
+  q = eqQuantity;
+  for (let i = eqIdx + 1; i < n; i++) {
+    q += randInt(12, 22);
+    qs[i] = q;
+  }
+
+  return { product, prices, qd, qs, eqIdx, eqPrice, eqQuantity };
+}
+
+/* Find equilibrium (exact or closest/crossing) */
+function findEquilibrium(prices, qd, qs) {
+  for (let i = 0; i < prices.length; i++) {
+    if (qd[i] === qs[i]) {
+      return { price: prices[i], quantity: qd[i], idx: i };
+    }
+  }
+  // Look for crossing
+  for (let i = 0; i < prices.length - 1; i++) {
+    const diff1 = qd[i] - qs[i];
+    const diff2 = qd[i + 1] - qs[i + 1];
+    if (diff1 * diff2 <= 0) {
+      if (Math.abs(diff1) <= Math.abs(diff2)) {
+        return { price: prices[i], quantity: Math.round((qd[i] + qs[i]) / 2), idx: i };
+      } else {
+        return { price: prices[i + 1], quantity: Math.round((qd[i + 1] + qs[i + 1]) / 2), idx: i + 1 };
+      }
+    }
+  }
+  // Fallback to closest
+  let best = 0;
+  let minD = Infinity;
+  for (let i = 0; i < prices.length; i++) {
+    const d = Math.abs(qd[i] - qs[i]);
+    if (d < minD) { minD = d; best = i; }
+  }
+  return { price: prices[best], quantity: Math.round((qd[best] + qs[best]) / 2), idx: best };
+}
+
+/* Round to at most 2 decimals */
+function round2(n) {
+  return Math.round(n * 100) / 100;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   Question generators
+   ──────────────────────────────────────────────────────────────── */
+function genEquilibriumQuestions(s) {
+  const Q = [];
+
+  // Q1: Equilibrium price (numeric)
+  Q.push({
+    id: "eqPrice",
+    type: "numeric",
+    text: `What is the equilibrium price in the market for ${s.product}?`,
+    answer: s.eqPrice,
+    unit: "$",
+    reasoning: `Equilibrium occurs where quantity demanded equals quantity supplied. Looking at the table, this happens at $${s.eqPrice} per unit (where both are ${s.eqQuantity} units).`,
+  });
+
+  // Q2: Equilibrium quantity
+  Q.push({
+    id: "eqQty",
+    type: "numeric",
+    text: `What is the equilibrium quantity in the market for ${s.product}?`,
+    answer: s.eqQuantity,
+    unit: "units",
+    reasoning: `At the equilibrium price of $${s.eqPrice}, both buyers and sellers want to trade ${s.eqQuantity} units. This is the market-clearing quantity.`,
+  });
+
+  // Q3: Surplus at a price above equilibrium
+  const aboveIdx = Math.min(s.eqIdx + 2, s.prices.length - 1);
+  const abovePrice = s.prices[aboveIdx];
+  const surplus = s.qs[aboveIdx] - s.qd[aboveIdx];
+  Q.push({
+    id: "surplus",
+    type: "numeric",
+    text: `At a price of $${abovePrice}, what is the surplus (or shortage) in the market for ${s.product}?`,
+    answer: surplus,
+    unit: "units (positive = surplus)",
+    reasoning: `At $${abovePrice}, quantity supplied is ${s.qs[aboveIdx]} while quantity demanded is only ${s.qd[aboveIdx]}. Surplus = ${s.qs[aboveIdx]} − ${s.qd[aboveIdx]} = ${surplus} units. Sellers would be willing to sell more than buyers want to purchase.`,
+  });
+
+  // Q4: MCQ — what happens when price is above equilibrium
+  Q.push({
+    id: "priceAbove",
+    text: `If the price is set at $${abovePrice} (above equilibrium), which of the following will occur?`,
+    options: [
+      "There will be a surplus and price will tend to fall",
+      "There will be a shortage and price will tend to rise",
+      "The market will clear with no pressure on price",
+      "Quantity demanded will equal quantity supplied"
+    ],
+    answer: "There will be a surplus and price will tend to fall",
+    reasoning: `At a price above equilibrium there is a surplus (${surplus} units). Sellers compete by lowering price, moving the market back toward equilibrium.`,
+  });
+
+  return Q;
+}
+
+function genDemandShiftQuestions(s) {
+  const Q = [];
+
+  // Q1: MCQ — shifter
+  const demandShifters = [
+    { text: "An increase in consumer income (for a normal good)", correct: true },
+    { text: "A decrease in the price of a substitute good", correct: false },
+    { text: "An increase in the price of a complement good", correct: false },
+    { text: "A successful advertising campaign for ${s.product}", correct: true },
+    { text: "An increase in the number of buyers in the market", correct: true },
+  ];
+  // Pick one correct and two incorrect
+  const correctShifter = demandShifters.find(x => x.correct);
+  const wrongOnes = demandShifters.filter(x => !x.correct).slice(0, 2);
+  const shifterOptions = shuffleArr([
+    correctShifter.text.replace("${s.product}", s.product),
+    ...wrongOnes.map(x => x.text.replace("${s.product}", s.product)),
+    "A decrease in production costs for ${s.product}".replace("${s.product}", s.product)
+  ]);
+  Q.push({
+    id: "demandShifter",
+    text: `Which of the following would cause the demand curve for ${s.product} to shift to the right?`,
+    options: shifterOptions,
+    answer: correctShifter.text.replace("${s.product}", s.product),
+    reasoning: `Rightward shift of demand means buyers want more at every price. This is caused by increases in income (normal good), more buyers, successful advertising, or lower prices of complements. Changes in production costs affect supply, not demand.`,
+  });
+
+  // Q2: Numeric — new equilibrium after demand shift (guaranteed exact match)
+  const targetIdx = s.eqIdx + (randInt(0,1) ? 1 : -1); // move one step
+  const clampedTarget = Math.max(1, Math.min(s.prices.length - 2, targetIdx));
+  const delta = s.qs[clampedTarget] - s.qd[clampedTarget];
+  const shiftDir = delta > 0 ? "increases" : "decreases";
+  const shiftAmount = Math.abs(delta);
+
+  const newQd = s.qd.map(q => q + delta);
+  const newEq = findEquilibrium(s.prices, newQd, s.qs); // will be exact at clampedTarget
+
+  Q.push({
+    id: "demandShiftEqPrice",
+    type: "numeric",
+    text: `Consumer income rises, causing demand for ${s.product} to ${shiftDir} by ${shiftAmount} units at every price. What is the new equilibrium price?`,
+    answer: newEq.price,
+    unit: "$",
+    reasoning: `New demand = old demand ${delta >= 0 ? "+" : ""}${delta} at every price. The new intersection with supply is at $${newEq.price} (quantity ${newEq.quantity}). Because demand increased, both equilibrium price and quantity rise.`,
+  });
+
+  // Q3: Effect on equilibrium after demand increase (MCQ)
+  Q.push({
+    id: "demandShiftEffect",
+    text: `If demand for ${s.product} increases (shifts right), what happens to the equilibrium price and quantity?`,
+    options: [
+      "Price rises, quantity rises",
+      "Price falls, quantity rises",
+      "Price rises, quantity falls",
+      "Price falls, quantity falls"
+    ],
+    answer: "Price rises, quantity rises",
+    reasoning: `A rightward shift of demand increases both equilibrium price and equilibrium quantity. Buyers are willing to pay more and purchase more at the new intersection with the supply curve.`,
+  });
+
+  return Q;
+}
+
+function genSupplyShiftQuestions(s) {
+  const Q = [];
+
+  // Q1: MCQ — supply shifter
+  const supplyShifters = [
+    { text: "A technological improvement that lowers production costs", correct: true },
+    { text: "An increase in the price of a key input (raw material)", correct: false },
+    { text: "An increase in the number of sellers in the market", correct: true },
+    { text: "A government subsidy to producers", correct: true },
+    { text: "An increase in consumer income", correct: false },
+  ];
+  const correctSupply = supplyShifters.find(x => x.correct);
+  const wrongSupply = supplyShifters.filter(x => !x.correct).slice(0, 2);
+  const supplyOptions = shuffleArr([
+    correctSupply.text,
+    ...wrongSupply.map(x => x.text),
+    "A successful advertising campaign for the product"
+  ]);
+  Q.push({
+    id: "supplyShifter",
+    text: `Which of the following would cause the supply curve for ${s.product} to shift to the right?`,
+    options: supplyOptions,
+    answer: correctSupply.text,
+    reasoning: `Rightward shift of supply means producers are willing to sell more at every price. This happens when production becomes cheaper (technology, subsidies) or when more sellers enter the market. Higher input prices or higher consumer income affect costs or demand, not supply directly.`,
+  });
+
+  // Q2: Numeric new eq after supply shift
+  const targetIdx2 = s.eqIdx + (randInt(0,1) ? 1 : -1);
+  const clampedTarget2 = Math.max(1, Math.min(s.prices.length - 2, targetIdx2));
+  const deltaSupply = s.qd[clampedTarget2] - s.qs[clampedTarget2]; // how much to add to QS to match at target
+  const supplyShiftDir = deltaSupply > 0 ? "increases" : "decreases";
+  const supplyShiftAmount = Math.abs(deltaSupply);
+
+  const newQs = s.qs.map(q => q + deltaSupply);
+  const newEqSupply = findEquilibrium(s.prices, s.qd, newQs);
+
+  Q.push({
+    id: "supplyShiftEqPrice",
+    type: "numeric",
+    text: `A new technology lowers production costs, causing supply of ${s.product} to ${supplyShiftDir} by ${supplyShiftAmount} units at every price. What is the new equilibrium price?`,
+    answer: newEqSupply.price,
+    unit: "$",
+    reasoning: `New supply = old supply ${deltaSupply >= 0 ? "+" : ""}${deltaSupply} at every price. The new intersection with demand is at $${newEqSupply.price} (quantity ${newEqSupply.quantity}). An increase in supply lowers equilibrium price and raises equilibrium quantity.`,
+  });
+
+  // Q3: Effect on equilibrium after supply increase
+  Q.push({
+    id: "supplyShiftEffect",
+    text: `If supply of ${s.product} increases (shifts right), what happens to the equilibrium price and quantity?`,
+    options: [
+      "Price rises, quantity rises",
+      "Price falls, quantity rises",
+      "Price rises, quantity falls",
+      "Price falls, quantity falls"
+    ],
+    answer: "Price falls, quantity rises",
+    reasoning: `A rightward shift of supply lowers equilibrium price and raises equilibrium quantity. Producers are willing to sell more at lower prices, moving the market to a new intersection with the demand curve.`,
+  });
+
+  return Q;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   Human-readable labels for the per-question stats table
+   ──────────────────────────────────────────────────────────────── */
+const QUESTION_LABELS = {
+  eqPrice:            "Equilibrium price",
+  eqQty:              "Equilibrium quantity",
+  surplus:            "Surplus at above-equilibrium price",
+  priceAbove:         "Effect of price above equilibrium",
+  demandShifter:      "What shifts demand right",
+  demandShiftEqPrice: "New equilibrium price after demand shift",
+  demandShiftEffect:  "Effect of demand increase on P & Q",
+  supplyShifter:      "What shifts supply right",
+  supplyShiftEqPrice: "New equilibrium price after supply shift",
+  supplyShiftEffect:  "Effect of supply increase on P & Q",
+};
+
+/* ────────────────────────────────────────────────────────────────
+   State + rendering
+   ──────────────────────────────────────────────────────────────── */
+const state = {
+  tab: "equilibrium",
+  scenario: generateScenario(),
+  answers: {},
+  submitted: {},
+  stats: {},
+};
+
+const CONCEPTS = {
+  equilibrium: `<strong>Market equilibrium</strong> occurs where quantity demanded equals quantity supplied. At this price, there is no tendency for price to change. If price is above equilibrium there is a <strong>surplus</strong>; if below, a <strong>shortage</strong>. The market naturally moves toward equilibrium.`,
+
+  demand: `<strong>Demand shifters</strong> (non-price determinants) move the entire demand curve: changes in income, tastes/preferences, prices of related goods (substitutes/complements), number of buyers, and expectations. A rightward shift means buyers want more at every price. The supply curve stays put, so the new equilibrium has higher price and higher quantity.`,
+
+  supply: `<strong>Supply shifters</strong> move the entire supply curve: changes in input prices, technology, number of sellers, expectations, and government policies (taxes/subsidies). A rightward shift means producers supply more at every price. The demand curve stays put, so the new equilibrium has lower price and higher quantity.`,
+};
+
+const INTRO_HTML = `
+  <div class="intro-card">
+    <p><strong>The setup.</strong> The table below shows the weekly market schedule for <strong id="product-name"></strong>. Each row gives the quantity buyers are willing to purchase (Demand) and sellers are willing to sell (Supply) at that price.</p>
+    <p><strong>Equilibrium</strong> is the price at which Quantity Demanded = Quantity Supplied. When demand or supply shifts, we find the new intersection point.</p>
+    <p class="ppf-note"><em>Tip: When a curve shifts, compare the new quantities at each price to find where the market clears again.</em></p>
+  </div>
+`;
+
+function currentQuestions() {
+  if (state.tab === "equilibrium") return genEquilibriumQuestions(state.scenario);
+  if (state.tab === "demand") return genDemandShiftQuestions(state.scenario);
+  return genSupplyShiftQuestions(state.scenario);
+}
+
+const NUMERIC_PATTERN = /^\d+(\.\d{1,2})?$/;
+
+function isAnswerProvided(q) {
+  const ans = state.answers[q.id];
+  if (q.type === "numeric") {
+    if (ans === undefined || ans === "") return false;
+    return NUMERIC_PATTERN.test(ans);
+  }
+  return ans !== undefined;
+}
+
+function isAnswerCorrect(q) {
+  const ans = state.answers[q.id];
+  if (ans === undefined) return false;
+  if (q.type === "numeric") {
+    if (!NUMERIC_PATTERN.test(ans)) return false;
+    const num = parseFloat(ans);
+    if (!Number.isFinite(num)) return false;
+    return Math.abs(num - q.answer) < 0.6; // tolerance for rounding / slight interpolation
+  }
+  return ans === q.answer;
+}
+
+function displayAnswer(q) {
+  return q.type === "numeric" ? String(round2(q.answer)) : q.answer;
+}
+
+function sanitizeNumericInput(raw) {
+  let v = String(raw).replace(/[^0-9.]/g, "");
+  const parts = v.split(".");
+  if (parts.length > 2) v = parts[0] + "." + parts.slice(1).join("");
+  const reparts = v.split(".");
+  if (reparts.length === 2 && reparts[1].length > 2) {
+    v = reparts[0] + "." + reparts[1].slice(0, 2);
+  }
+  return v;
+}
+
+function renderConcept() {
+  document.getElementById("concept").innerHTML =
+    `<div class="concept">${CONCEPTS[state.tab]}</div>`;
+}
+
+function renderScore() {
+  let solved = 0, correct = 0;
+  const questions = currentQuestions();
+  questions.forEach(q => {
+    const s = state.stats[q.id];
+    if (s) { solved += s.attempts; correct += s.correct; }
+  });
+  document.getElementById("s-attempted").textContent = solved;
+  document.getElementById("s-correct").textContent = correct;
+  document.getElementById("s-accuracy").textContent =
+    solved === 0 ? "—" : `${Math.round((correct / solved) * 100)}%`;
+}
+
+function accClass(attempts, correct) {
+  if (!attempts) return "dim";
+  const pct = correct / attempts;
+  if (pct >= 0.8) return "acc-good";
+  if (pct >= 0.5) return "acc-mid";
+  return "acc-bad";
+}
+
+function renderQuestionStats(questions) {
+  const rows = questions.map(q => {
+    const s = state.stats[q.id] || { attempts: 0, correct: 0 };
+    const acc = s.attempts === 0 ? "—" : `${Math.round(s.correct / s.attempts * 100)}%`;
+    const cls = accClass(s.attempts, s.correct);
+    return `
+      <tr>
+        <td class="qlabel">${escapeHTML(QUESTION_LABELS[q.id] || q.id)}</td>
+        <td class="numeric ${s.attempts === 0 ? "dim" : ""}">${s.attempts}</td>
+        <td class="numeric ${s.attempts === 0 ? "dim" : ""}">${s.correct}</td>
+        <td class="numeric ${cls}">${acc}</td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div class="card">
+      <p class="card-label">Per-question performance · this tab</p>
+      <table class="ppf-table stats-table">
+        <thead>
+          <tr>
+            <th>Question type</th>
+            <th class="numeric">Attempts</th>
+            <th class="numeric">Correct</th>
+            <th class="numeric">Accuracy</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p class="ppf-note">Tracks every submission you've made on this tab, across all markets. Use it to identify which concepts need more practice.</p>
+    </div>
+  `;
+}
+
+function renderMarketTable(s) {
+  const rows = s.prices.map((p, i) => `
+    <tr>
+      <td class="numeric big">$${p}</td>
+      <td class="numeric big">${s.qd[i]}</td>
+      <td class="numeric big">${s.qs[i]}</td>
+    </tr>`).join("");
+
+  return `
+    <div class="card">
+      <div class="matrix-head">
+        <p class="card-label">Market schedule for ${s.product}</p>
+        <button class="btn secondary small" id="btn-new">New market</button>
+      </div>
+      <table class="ppf-table">
+        <thead>
+          <tr>
+            <th class="numeric">Price ($)</th>
+            <th class="numeric">Quantity Demanded</th>
+            <th class="numeric">Quantity Supplied</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+      <p class="ppf-note"><strong>Equilibrium</strong> is the row where Quantity Demanded = Quantity Supplied. When demand or supply shifts, add or subtract the shift amount from every entry in that column and find the new matching row.</p>
+    </div>
+  `;
+}
+
+function renderQuestion(q, index) {
+  const selected = state.answers[q.id];
+  const isSubmitted = !!state.submitted[q.id];
+  const isCorrect = isSubmitted && isAnswerCorrect(q);
+
+  const cardClass = isSubmitted ? (isCorrect ? "correct" : "wrong") : "";
+
+  let bodyHTML;
+  if (q.type === "numeric") {
+    const value = selected !== undefined ? selected : "";
+    const inputClass = [
+      "numeric-input",
+      isSubmitted && isCorrect ? "show-correct" : "",
+      isSubmitted && !isCorrect ? "show-wrong" : "",
+    ].filter(Boolean).join(" ");
+    bodyHTML = `
+      <div class="numeric-input-row">
+        <input
+          type="text"
+          inputmode="decimal"
+          autocomplete="off"
+          class="${inputClass}"
+          data-numeric-q="${q.id}"
+          value="${escapeAttr(value)}"
+          placeholder="0"
+          ${isSubmitted ? "disabled" : ""}
+        />
+        <span class="numeric-unit">${escapeHTML(q.unit || "")}</span>
+      </div>
+      ${isSubmitted ? "" : `<p class="numeric-hint">Enter a number (up to 2 decimal places)</p>`}
+    `;
+  } else {
+    const optionsHTML = q.options.map(opt => {
+      const isThis = selected === opt;
+      const showCorrect = isSubmitted && opt === q.answer;
+      const showWrong = isSubmitted && isThis && !isCorrect;
+      const classes = [
+        "option",
+        isThis && !isSubmitted ? "selected" : "",
+        showCorrect ? "show-correct" : "",
+        showWrong ? "show-wrong" : "",
+      ].filter(Boolean).join(" ");
+      return `<button class="${classes}" data-q="${q.id}" data-opt="${escapeAttr(opt)}" ${isSubmitted ? "disabled" : ""}>${escapeHTML(opt)}</button>`;
+    }).join("");
+    bodyHTML = `<div class="options">${optionsHTML}</div>`;
+  }
+
+  const explanation = isSubmitted ? `
+    <div class="explanation ${isCorrect ? "correct" : "wrong"}">
+      <span class="verdict ${isCorrect ? "correct" : "wrong"}"><strong>${isCorrect ? "Correct." : `Incorrect — answer: ${escapeHTML(displayAnswer(q))}.`}</strong></span>
+      ${escapeHTML(q.reasoning)}
+    </div>
+  ` : "";
+
+  const actionRow = !isSubmitted ? `
+    <div class="q-actions">
+      <button class="btn small" data-submit-q="${q.id}" ${isAnswerProvided(q) ? "" : "disabled"}>Check answer</button>
+    </div>
+  ` : "";
+
+  return `
+    <div class="question ${cardClass} fade-up">
+      <div class="q-header">
+        <span class="q-tag">Q${index + 1}</span>
+        <p class="q-text">${escapeHTML(q.text)}</p>
+      </div>
+      ${bodyHTML}
+      ${actionRow}
+      ${explanation}
+    </div>
+  `;
+}
+
+function render() {
+  renderConcept();
+  const questions = currentQuestions();
+  renderScore();
+
+  const productNameEl = document.getElementById("product-name");
+  if (productNameEl) productNameEl.textContent = state.scenario.product;
+
+  document.getElementById("content").innerHTML = `
+    ${INTRO_HTML}
+    ${renderMarketTable(state.scenario)}
+    ${renderQuestionStats(questions)}
+    ${questions.map((q, i) => renderQuestion(q, i)).join("")}
+  `;
+
+  // Update product name in intro if needed (re-render safety)
+  const pn = document.getElementById("product-name");
+  if (pn) pn.textContent = state.scenario.product;
+
+  // Option buttons
+  document.querySelectorAll(".option").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const qId = btn.dataset.q;
+      if (state.submitted[qId]) return;
+      state.answers[qId] = btn.dataset.opt;
+      render();
+    });
+  });
+
+  // Numeric inputs
+  document.querySelectorAll("[data-numeric-q]").forEach(input => {
+    const qId = input.dataset.numericQ;
+
+    input.addEventListener("input", () => {
+      if (state.submitted[qId]) return;
+      const cleaned = sanitizeNumericInput(input.value);
+      if (cleaned !== input.value) input.value = cleaned;
+      state.answers[qId] = cleaned;
+
+      const submitBtn = document.querySelector(`[data-submit-q="${qId}"]`);
+      if (submitBtn) {
+        const valid = cleaned !== "" && NUMERIC_PATTERN.test(cleaned);
+        submitBtn.disabled = !valid;
+      }
+    });
+
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSubmitQuestion(qId);
+      }
+    });
+  });
+
+  // Per-question Check buttons
+  document.querySelectorAll("[data-submit-q]").forEach(btn => {
+    btn.addEventListener("click", () => handleSubmitQuestion(btn.dataset.submitQ));
+  });
+
+  // New market button
+  const newBtn = document.getElementById("btn-new");
+  if (newBtn) newBtn.addEventListener("click", handleNew);
+}
+
+function handleSubmitQuestion(qId) {
+  if (state.submitted[qId]) return;
+
+  const questions = currentQuestions();
+  const q = questions.find(x => x.id === qId);
+  if (!q) return;
+  if (!isAnswerProvided(q)) return;
+
+  const correct = isAnswerCorrect(q);
+  state.submitted[qId] = true;
+
+  if (!state.stats[qId]) state.stats[qId] = { attempts: 0, correct: 0 };
+  state.stats[qId].attempts += 1;
+  if (correct) state.stats[qId].correct += 1;
+
+  render();
+}
+
+function handleNew() {
+  state.scenario = generateScenario();
+  state.answers = {};
+  state.submitted = {};
+  render();
+}
+
+function switchTab(t) {
+  if (t === state.tab) return;
+  state.tab = t;
+  state.answers = {};
+  state.submitted = {};
+  document.querySelectorAll(".tab").forEach(b => {
+    b.classList.toggle("active", b.dataset.tab === t);
+  });
+  render();
+}
+
+document.querySelectorAll(".tab").forEach(b => {
+  b.addEventListener("click", () => switchTab(b.dataset.tab));
+});
+
+/* Utilities */
+function escapeHTML(s) {
+  return String(s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function escapeAttr(s) {
+  return escapeHTML(s);
+}
+
+render();
+</script>
+</body>
+</html>

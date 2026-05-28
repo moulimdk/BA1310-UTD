@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trade Theory — BA 1310</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f1efe8;
+    --text: #1a1a1a;
+    --text-2: #5f5e5a;
+    --text-3: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-2: rgba(0,0,0,0.25);
+    --info-bg: #e6f1fb;
+    --info-text: #0c447c;
+    --correct-bg: #e6f4e7;
+    --correct-text: #2d7a32;
+    --correct-border: rgba(45,122,50,0.35);
+    --wrong-bg: #fdeaea;
+    --wrong-text: #b33a3a;
+    --wrong-border: rgba(179,58,58,0.35);
+    --warn-bg: #fbf2e6;
+    --warn-text: #8a5a17;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .back {
+    font-size: 13px;
+    color: var(--text-3);
+    margin: 0 0 1.5rem;
+  }
+  .back a { color: var(--info-text); text-decoration: none; }
+  .back a:hover { text-decoration: underline; }
+
+  header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .course {
+    font-size: 13px;
+    color: var(--text-3);
+    margin: 0 0 0.25rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: 30px;
+    font-weight: 500;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-2);
+    margin: 0;
+  }
+
+  /* ─── Tabs ─── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 1.75rem;
+  }
+  .tab {
+    background: none;
+    border: none;
+    padding: 10px 16px 12px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text-3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -0.5px;
+    transition: color 0.15s, border-color 0.15s;
+    font-weight: 500;
+  }
+  .tab:hover { color: var(--text-2); }
+  .tab.active {
+    color: var(--info-text);
+    border-bottom-color: var(--info-text);
+    font-weight: 600;
+  }
+
+  /* ─── Score bar ─── */
+  .score {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 12px 18px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 1.25rem;
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .score .stat-label {
+    color: var(--text-3);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    margin-right: 0.4rem;
+  }
+  .score .stat-value { color: var(--text); font-weight: 600; }
+
+  /* ─── Concept card (formula/explanation) ─── */
+  .concept {
+    background: var(--info-bg);
+    color: var(--info-text);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+  .concept code {
+    background: rgba(0,0,0,0.06);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  .concept strong { font-weight: 600; }
+
+  /* ─── Intro / context card (above matrix) ─── */
+  .intro-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+  .intro-card p { margin: 0 0 0.6rem; }
+  .intro-card p:last-child { margin: 0; }
+  .intro-card strong { color: var(--text); font-weight: 600; }
+  .intro-card em { font-style: italic; }
+
+  /* ─── Scenario table card ─── */
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    margin-bottom: 1.25rem;
+  }
+  .card-label {
+    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 500;
+    margin: 0 0 0.75rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .ppf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .ppf-table th, .ppf-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .ppf-table thead th {
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 0.5px solid var(--border-2);
+  }
+  .ppf-table td.numeric, .ppf-table th.numeric { text-align: center; }
+  .ppf-table .country-name { font-weight: 600; color: var(--text); }
+  .ppf-table .big { font-size: 16px; font-weight: 600; }
+  .ppf-table tbody tr:last-child td { border-bottom: none; }
+  .ppf-note {
+    font-size: 12px;
+    color: var(--text-3);
+    margin: 0.75rem 0 0;
+    line-height: 1.5;
+  }
+
+  /* ─── Per-question stats table ─── */
+  .stats-table .qlabel { font-weight: 500; color: var(--text); }
+  .stats-table .dim { color: var(--text-3); }
+  .stats-table .acc-good { color: var(--correct-text); font-weight: 600; }
+  .stats-table .acc-mid  { color: var(--warn-text); font-weight: 600; }
+  .stats-table .acc-bad  { color: var(--wrong-text); font-weight: 600; }
+
+  /* ─── New problem header bar (next to matrix) ─── */
+  .matrix-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+  .matrix-head .card-label { margin: 0; }
+
+  /* ─── Question card ─── */
+  .question {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    margin-bottom: 0.85rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .question.correct {
+    border-color: var(--correct-border);
+    background: var(--correct-bg);
+  }
+  .question.wrong {
+    border-color: var(--wrong-border);
+    background: var(--wrong-bg);
+  }
+  .q-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.85rem;
+  }
+  .q-tag {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: var(--radius-sm);
+    background: var(--info-bg);
+    color: var(--info-text);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .q-text {
+    margin: 0;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .option {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 7px 14px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .option:hover:not(:disabled) {
+    border-color: var(--border-2);
+    background: var(--surface-2);
+  }
+  .option.selected {
+    border-color: var(--info-text);
+    background: var(--info-bg);
+    color: var(--info-text);
+    font-weight: 500;
+  }
+  .option.show-correct {
+    border-color: var(--correct-text);
+    background: var(--correct-bg);
+    color: var(--correct-text);
+    font-weight: 500;
+  }
+  .option.show-wrong {
+    border-color: var(--wrong-text);
+    background: var(--wrong-bg);
+    color: var(--wrong-text);
+    text-decoration: line-through;
+  }
+  .option:disabled { cursor: default; }
+
+  .explanation {
+    margin-top: 0.85rem;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-2);
+    border-left: 2px solid var(--text-3);
+    background: rgba(0,0,0,0.025);
+  }
+  .explanation.correct {
+    border-left-color: var(--correct-text);
+    background: rgba(45,122,50,0.06);
+  }
+  .explanation.wrong {
+    border-left-color: var(--wrong-text);
+    background: rgba(179,58,58,0.06);
+  }
+  .explanation strong { color: var(--text); font-weight: 600; }
+  .explanation .verdict.correct { color: var(--correct-text); }
+  .explanation .verdict.wrong { color: var(--wrong-text); }
+
+  /* ─── Question-level action row ─── */
+  .q-actions {
+    margin-top: 0.85rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* ─── Action buttons ─── */
+  .btn {
+    background: var(--info-text);
+    color: #fff;
+    border: 0.5px solid var(--info-text);
+    border-radius: var(--radius-md);
+    padding: 10px 20px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, background 0.15s;
+  }
+  .btn:hover:not(:disabled) { opacity: 0.88; }
+  .btn:disabled {
+    background: var(--surface-2);
+    color: var(--text-3);
+    border-color: var(--border);
+    cursor: not-allowed;
+  }
+  .btn.secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 0.5px solid var(--border-2);
+  }
+  .btn.secondary:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+  .btn.small {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+
+  /* ─── Footer ─── */
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 0.5px solid var(--border);
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  footer a { color: var(--info-text); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ─── Animation ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.3s ease both; }
+
+  /* ─── Dark mode ─── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #2c2c2a;
+      --surface-2: #3a3a38;
+      --text: #f5f5f0;
+      --text-2: #b4b2a9;
+      --text-3: #888780;
+      --border: rgba(255,255,255,0.15);
+      --border-2: rgba(255,255,255,0.3);
+      --info-bg: #0c447c;
+      --info-text: #b5d4f4;
+      --correct-bg: rgba(45,122,50,0.18);
+      --correct-text: #8fd297;
+      --correct-border: rgba(143,210,151,0.35);
+      --wrong-bg: rgba(179,58,58,0.18);
+      --wrong-text: #f0a0a0;
+      --wrong-border: rgba(240,160,160,0.35);
+      --warn-bg: rgba(138,90,23,0.18);
+      --warn-text: #e5c489;
+    }
+    .option.show-correct { background: rgba(143,210,151,0.18); }
+    .option.show-wrong { background: rgba(240,160,160,0.18); }
+    .btn { background: var(--info-text); color: #0c447c; border-color: var(--info-text); }
+  }
+
+  /* ─── Mobile ─── */
+  @media (max-width: 600px) {
+    .container { padding: 2rem 1rem 3rem; }
+    h1 { font-size: 24px; }
+    .tab { padding: 10px 10px 12px; font-size: 13px; }
+    .question, .card { padding: 16px 16px; }
+    .ppf-table th, .ppf-table td { padding: 8px 8px; font-size: 13px; }
+    .intro-card { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <p class="back"><a href="../">← Teaching Tools</a></p>
+
+    <header>
+      <p class="course">BA 1310 · UT Dallas</p>
+      <h1>Trade Theory</h1>
+      <p class="subtitle">Absolute Advantage · Comparative Advantage — practice problems</p>
+    </header>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="absolute" role="tab">Absolute Advantage</button>
+      <button class="tab" data-tab="comparative" role="tab">Comparative Advantage</button>
+    </div>
+
+    <div class="score" id="score-bar">
+      <div><span class="stat-label">Attempted</span><span class="stat-value" id="s-attempted">0</span></div>
+      <div><span class="stat-label">Correct</span><span class="stat-value" id="s-correct">0</span></div>
+      <div><span class="stat-label">Accuracy</span><span class="stat-value" id="s-accuracy">—</span></div>
+    </div>
+
+    <div id="concept"></div>
+    <div id="content"></div>
+
+    <footer>
+      Part of the <a href="../">BA 1310 teaching tools</a>. Source on <a href="https://github.com/moulimdk/BA1310-UTD">GitHub</a>.
+    </footer>
+  </div>
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   Data + scenario generation
+   ──────────────────────────────────────────────────────────────── */
+const COUNTRY_PAIRS = [
+  ["Alphaland", "Betatonia"],
+  ["Northia", "Southmark"],
+  ["Estlandia", "Westoria"],
+  ["Solaria", "Lunaris"],
+  ["Riverton", "Hillcrest"],
+];
+const GOOD_PAIRS = [
+  ["Wheat", "Cloth"],
+  ["Cars", "Computers"],
+  ["Wine", "Cheese"],
+  ["Steel", "Textiles"],
+  ["Corn", "Machinery"],
+];
+const RESOURCE = { label: "8 hours", hours: 8 };
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffleArr(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generateScenario() {
+  const countries = COUNTRY_PAIRS[randInt(0, COUNTRY_PAIRS.length - 1)];
+  const goods = GOOD_PAIRS[randInt(0, GOOD_PAIRS.length - 1)];
+
+  // Pick 4 DISTINCT rates from 1..9. Also ensure the opportunity costs
+  // differ between countries (so questions don't collapse to "Neither/tied").
+  let rates = null;
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const picks = shuffleArr([1,2,3,4,5,6,7,8,9]).slice(0, 4);
+    const r = [[picks[0], picks[1]], [picks[2], picks[3]]];
+    const oc0_c0 = r[0][1] / r[0][0]; // OC of good 0 for country 0
+    const oc0_c1 = r[1][1] / r[1][0]; // OC of good 0 for country 1
+    if (Math.abs(oc0_c0 - oc0_c1) > 1e-6) {
+      rates = r;
+      break;
+    }
+  }
+  if (!rates) rates = [[2, 3], [5, 4]]; // fallback (effectively unreachable)
+
+  const maxOutput = rates.map(r => r.map(v => v * RESOURCE.hours));
+  return { countries, goods, rates, maxOutput };
+}
+
+function frac(n) {
+  if (Number.isInteger(n)) return `${n}`;
+  const tol = 1e-6;
+  for (let d = 1; d <= 100; d++) {
+    const num = Math.round(n * d);
+    if (Math.abs(num / d - n) < tol) return `${num}/${d}`;
+  }
+  return n.toFixed(2);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   Question generators
+   ──────────────────────────────────────────────────────────────── */
+function genAbsoluteQuestions(s) {
+  const Q = [];
+
+  const aaGood0 =
+    s.maxOutput[0][0] > s.maxOutput[1][0] ? s.countries[0]
+    : s.maxOutput[1][0] > s.maxOutput[0][0] ? s.countries[1]
+    : "Neither (tied)";
+  Q.push({
+    id: "aa0",
+    text: `Who has the absolute advantage in producing ${s.goods[0]}?`,
+    options: [s.countries[0], s.countries[1], "Neither (tied)"],
+    answer: aaGood0,
+    reasoning: `In ${RESOURCE.label}, ${s.countries[0]} can produce ${s.maxOutput[0][0]} units of ${s.goods[0]} while ${s.countries[1]} can produce ${s.maxOutput[1][0]} units. ${
+      aaGood0 === "Neither (tied)"
+        ? "They produce the same amount, so neither has an absolute advantage."
+        : `${aaGood0} produces more, so ${aaGood0} has the absolute advantage in ${s.goods[0]}.`
+    }`,
+  });
+
+  const aaGood1 =
+    s.maxOutput[0][1] > s.maxOutput[1][1] ? s.countries[0]
+    : s.maxOutput[1][1] > s.maxOutput[0][1] ? s.countries[1]
+    : "Neither (tied)";
+  Q.push({
+    id: "aa1",
+    text: `Who has the absolute advantage in producing ${s.goods[1]}?`,
+    options: [s.countries[0], s.countries[1], "Neither (tied)"],
+    answer: aaGood1,
+    reasoning: `In ${RESOURCE.label}, ${s.countries[0]} can produce ${s.maxOutput[0][1]} units of ${s.goods[1]} while ${s.countries[1]} can produce ${s.maxOutput[1][1]} units. ${
+      aaGood1 === "Neither (tied)"
+        ? "They produce the same amount, so neither has an absolute advantage."
+        : `${aaGood1} produces more, so ${aaGood1} has the absolute advantage in ${s.goods[1]}.`
+    }`,
+  });
+
+  Q.push({
+    id: "max00",
+    text: `If ${s.countries[0]} devotes all ${RESOURCE.label} to ${s.goods[0]}, how many units can it produce?`,
+    options: dedupe([`${s.maxOutput[0][0]}`, `${s.maxOutput[0][1]}`, `${s.maxOutput[1][0]}`, `${s.rates[0][0]}`]),
+    answer: `${s.maxOutput[0][0]}`,
+    reasoning: `${s.countries[0]} produces ${s.rates[0][0]} units of ${s.goods[0]} per hour. With ${RESOURCE.label}: ${s.rates[0][0]} × ${RESOURCE.hours} = ${s.maxOutput[0][0]} units.`,
+  });
+
+  Q.push({
+    id: "max11",
+    text: `If ${s.countries[1]} devotes all ${RESOURCE.label} to ${s.goods[1]}, how many units can it produce?`,
+    options: dedupe([`${s.maxOutput[1][1]}`, `${s.maxOutput[1][0]}`, `${s.maxOutput[0][1]}`, `${s.rates[1][1]}`]),
+    answer: `${s.maxOutput[1][1]}`,
+    reasoning: `${s.countries[1]} produces ${s.rates[1][1]} units of ${s.goods[1]} per hour. With ${RESOURCE.label}: ${s.rates[1][1]} × ${RESOURCE.hours} = ${s.maxOutput[1][1]} units.`,
+  });
+
+  const bothAA =
+    s.maxOutput[0][0] > s.maxOutput[1][0] && s.maxOutput[0][1] > s.maxOutput[1][1] ? s.countries[0]
+    : s.maxOutput[1][0] > s.maxOutput[0][0] && s.maxOutput[1][1] > s.maxOutput[0][1] ? s.countries[1]
+    : null;
+  Q.push({
+    id: "bothAA",
+    text: `Does any single country have the absolute advantage in BOTH goods?`,
+    options: [`Yes, ${s.countries[0]}`, `Yes, ${s.countries[1]}`, "No"],
+    answer: bothAA ? `Yes, ${bothAA}` : "No",
+    reasoning: bothAA
+      ? `${bothAA} produces more of both goods (${s.goods[0]}: ${bothAA === s.countries[0] ? s.maxOutput[0][0] : s.maxOutput[1][0]} vs ${bothAA === s.countries[0] ? s.maxOutput[1][0] : s.maxOutput[0][0]}; ${s.goods[1]}: ${bothAA === s.countries[0] ? s.maxOutput[0][1] : s.maxOutput[1][1]} vs ${bothAA === s.countries[0] ? s.maxOutput[1][1] : s.maxOutput[0][1]}), so it has absolute advantage in both.`
+      : `Neither country produces more of both goods, so no single country has absolute advantage in both.`,
+  });
+
+  return Q;
+}
+
+function genComparativeQuestions(s) {
+  const Q = [];
+  const ocGood0 = [s.maxOutput[0][1] / s.maxOutput[0][0], s.maxOutput[1][1] / s.maxOutput[1][0]];
+  const ocGood1 = [s.maxOutput[0][0] / s.maxOutput[0][1], s.maxOutput[1][0] / s.maxOutput[1][1]];
+
+  Q.push({
+    id: "oc00",
+    text: `What is the opportunity cost of producing 1 unit of ${s.goods[0]} for ${s.countries[0]}? (in terms of ${s.goods[1]})`,
+    options: dedupe([frac(ocGood0[0]), frac(ocGood1[0]), frac(ocGood0[1]), frac(ocGood1[1])]),
+    answer: frac(ocGood0[0]),
+    reasoning: `${s.countries[0]} can produce ${s.maxOutput[0][0]} ${s.goods[0]} OR ${s.maxOutput[0][1]} ${s.goods[1]} in ${RESOURCE.label}. To produce 1 more unit of ${s.goods[0]}, it must give up ${s.maxOutput[0][1]}/${s.maxOutput[0][0]} = ${frac(ocGood0[0])} units of ${s.goods[1]}.`,
+  });
+
+  Q.push({
+    id: "oc11",
+    text: `What is the opportunity cost of producing 1 unit of ${s.goods[1]} for ${s.countries[1]}? (in terms of ${s.goods[0]})`,
+    options: dedupe([frac(ocGood1[1]), frac(ocGood0[1]), frac(ocGood1[0]), frac(ocGood0[0])]),
+    answer: frac(ocGood1[1]),
+    reasoning: `${s.countries[1]} can produce ${s.maxOutput[1][1]} ${s.goods[1]} OR ${s.maxOutput[1][0]} ${s.goods[0]} in ${RESOURCE.label}. To produce 1 more unit of ${s.goods[1]}, it must give up ${s.maxOutput[1][0]}/${s.maxOutput[1][1]} = ${frac(ocGood1[1])} units of ${s.goods[0]}.`,
+  });
+
+  const caGood0 =
+    ocGood0[0] < ocGood0[1] ? s.countries[0]
+    : ocGood0[1] < ocGood0[0] ? s.countries[1]
+    : "Neither (tied)";
+  Q.push({
+    id: "ca0",
+    text: `Who has the comparative advantage in producing ${s.goods[0]}?`,
+    options: [s.countries[0], s.countries[1], "Neither (tied)"],
+    answer: caGood0,
+    reasoning: `OC of ${s.goods[0]}: ${s.countries[0]} = ${frac(ocGood0[0])} ${s.goods[1]}, ${s.countries[1]} = ${frac(ocGood0[1])} ${s.goods[1]}. ${
+      caGood0 === "Neither (tied)"
+        ? "Both have the same opportunity cost, so neither has comparative advantage."
+        : `${caGood0} has the lower opportunity cost, so ${caGood0} has the comparative advantage in ${s.goods[0]}.`
+    }`,
+  });
+
+  const caGood1 =
+    ocGood1[0] < ocGood1[1] ? s.countries[0]
+    : ocGood1[1] < ocGood1[0] ? s.countries[1]
+    : "Neither (tied)";
+  Q.push({
+    id: "ca1",
+    text: `Who has the comparative advantage in producing ${s.goods[1]}?`,
+    options: [s.countries[0], s.countries[1], "Neither (tied)"],
+    answer: caGood1,
+    reasoning: `OC of ${s.goods[1]}: ${s.countries[0]} = ${frac(ocGood1[0])} ${s.goods[0]}, ${s.countries[1]} = ${frac(ocGood1[1])} ${s.goods[0]}. ${
+      caGood1 === "Neither (tied)"
+        ? "Both have the same opportunity cost, so neither has comparative advantage."
+        : `${caGood1} has the lower opportunity cost, so ${caGood1} has the comparative advantage in ${s.goods[1]}.`
+    }`,
+  });
+
+  const specCountry0Good = caGood0 !== "Neither (tied)" && caGood0 === s.countries[0] ? 0
+    : caGood0 === s.countries[1] ? 1 : -1;
+
+  if (specCountry0Good === -1) {
+    Q.push({
+      id: "spec",
+      text: `If both countries have identical opportunity costs, does specialization based on comparative advantage increase total output?`,
+      options: ["Yes", "No, total output stays the same", "It decreases"],
+      answer: "No, total output stays the same",
+      reasoning: `When opportunity costs are equal, there are no gains from specialization. Total output remains unchanged regardless of how production is allocated.`,
+    });
+  } else {
+    const c0Good = specCountry0Good === 0 ? 0 : 1;
+    const totalG0Before = Math.round(s.maxOutput[0][0] / 2 + s.maxOutput[1][0] / 2);
+    const totalG0After = c0Good === 0 ? s.maxOutput[0][0] : s.maxOutput[1][0];
+    const specInGood0 = c0Good === 0 ? s.countries[0] : s.countries[1];
+    const specInGood1 = c0Good === 1 ? s.countries[0] : s.countries[1];
+
+    Q.push({
+      id: "spec",
+      text: `If each country fully specializes according to comparative advantage, what is the combined total output of ${s.goods[0]}?`,
+      options: dedupe([`${totalG0After}`, `${s.maxOutput[0][0]}`, `${s.maxOutput[1][0]}`, `${totalG0Before}`]),
+      answer: `${totalG0After}`,
+      reasoning: `${specInGood0} has comparative advantage in ${s.goods[0]} and specializes entirely in it, producing ${totalG0After} units. ${specInGood1} specializes in ${s.goods[1]} and produces 0 units of ${s.goods[0]}. Total ${s.goods[0]} = ${totalG0After}.`,
+    });
+  }
+
+  const caG0Country = caGood0 !== "Neither (tied)" ? caGood0 : null;
+  const caG1Country = caGood1 !== "Neither (tied)" ? caGood1 : null;
+
+  if (caG0Country && caG1Country) {
+    const exporterOfGood0 = caG0Country;
+    Q.push({
+      id: "trade",
+      text: `After specialization, which country should export ${s.goods[0]} and import ${s.goods[1]}?`,
+      options: [s.countries[0], s.countries[1]],
+      answer: exporterOfGood0,
+      reasoning: `${exporterOfGood0} has comparative advantage in ${s.goods[0]} (lower OC: ${frac(exporterOfGood0 === s.countries[0] ? ocGood0[0] : ocGood0[1])} vs ${frac(exporterOfGood0 === s.countries[0] ? ocGood0[1] : ocGood0[0])}). It should specialize in ${s.goods[0]}, export the surplus, and import ${s.goods[1]} from ${exporterOfGood0 === s.countries[0] ? s.countries[1] : s.countries[0]}.`,
+    });
+
+    const low = Math.min(ocGood0[0], ocGood0[1]);
+    const high = Math.max(ocGood0[0], ocGood0[1]);
+    const wrongLow = low / 2;
+    const wrongHigh = high * 2;
+    Q.push({
+      id: "tradeRange",
+      text: `For trade to be mutually beneficial, the price of 1 unit of ${s.goods[0]} (in terms of ${s.goods[1]}) must fall between which values?`,
+      options: [
+        `Between ${frac(low)} and ${frac(high)}`,
+        `Between ${frac(wrongLow)} and ${frac(low)}`,
+        `Between ${frac(high)} and ${frac(wrongHigh)}`,
+        `Exactly ${frac((low + high) / 2)}`,
+      ],
+      answer: `Between ${frac(low)} and ${frac(high)}`,
+      reasoning: `The OC of ${s.goods[0]} is ${frac(ocGood0[0])} for ${s.countries[0]} and ${frac(ocGood0[1])} for ${s.countries[1]}. For trade to benefit both, the trading price must lie between the two opportunity costs: between ${frac(low)} and ${frac(high)} units of ${s.goods[1]} per unit of ${s.goods[0]}.`,
+    });
+  } else {
+    Q.push({
+      id: "trade",
+      text: `When two countries have identical opportunity costs for both goods, are there gains from trade based on comparative advantage?`,
+      options: ["Yes, always", "No", "Only if one has absolute advantage"],
+      answer: "No",
+      reasoning: `Gains from trade arise from differences in opportunity costs (comparative advantage). If both countries have the same opportunity costs, neither has a comparative advantage, so there are no gains from trade based on comparative advantage.`,
+    });
+    Q.push({
+      id: "tradeRange",
+      text: `If both countries have the same opportunity costs, what is the range of mutually beneficial trade prices?`,
+      options: [
+        "No such range exists",
+        `Between 0 and ${frac(ocGood0[0])}`,
+        `Between ${frac(ocGood0[0])} and infinity`,
+        `Exactly ${frac(ocGood0[0])}`,
+      ],
+      answer: "No such range exists",
+      reasoning: `When opportunity costs are identical, the two endpoints of the "mutually beneficial" range collapse to the same point. There's no price at which both countries strictly benefit, so no such range exists.`,
+    });
+  }
+
+  return Q;
+}
+
+function dedupe(arr) {
+  return arr.filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   Human-readable labels for the per-question stats table
+   ──────────────────────────────────────────────────────────────── */
+const QUESTION_LABELS = {
+  aa0:        "Absolute advantage · good 1",
+  aa1:        "Absolute advantage · good 2",
+  max00:      "Max output (Country 1, good 1)",
+  max11:      "Max output (Country 2, good 2)",
+  bothAA:     "Absolute advantage in both goods",
+  oc00:       "Opportunity cost · good 1 (Country 1)",
+  oc11:       "Opportunity cost · good 2 (Country 2)",
+  ca0:        "Comparative advantage · good 1",
+  ca1:        "Comparative advantage · good 2",
+  spec:       "Specialization & total output",
+  trade:      "Trade direction (export/import)",
+  tradeRange: "Mutually beneficial price range",
+};
+
+/* ────────────────────────────────────────────────────────────────
+   State + rendering
+   ──────────────────────────────────────────────────────────────── */
+const state = {
+  tab: "absolute",
+  scenario: generateScenario(),
+  answers: {},      // { qId: selectedOption }
+  submitted: {},    // { qId: true } — which individual questions have been checked
+  stats: {},        // { qId: { attempts, correct } } — persistent across new problems
+};
+
+const CONCEPTS = {
+  absolute: `<strong>Absolute advantage:</strong> a country has an absolute advantage in producing a good if it can produce <em>more</em> of that good than another country using the same resources. Compare the maximum output of each country directly.`,
+  comparative: `<strong>Comparative advantage:</strong> a country has a comparative advantage in producing a good if its <em>opportunity cost</em> is lower than another country's. Opportunity cost of one good = units of the <em>other</em> good given up. <code>OC of good A = max output of good B ÷ max output of good A</code>`,
+};
+
+const INTRO_HTML = `
+  <div class="intro-card">
+    <p><strong>The setup.</strong> Two countries each have <strong>${RESOURCE.label}</strong> of labor to allocate between two goods. The table below shows the <em>maximum</em> amount of each good a country could make if it spent <em>all</em> of its labor on that single good — the two endpoints of its production possibilities.</p>
+    <p><strong>What's a <em>linear</em> production possibility frontier (PPF)?</strong> The PPF is the set of all output combinations a country can produce. We call it <em>linear</em> when the trade-off between the two goods is constant: every hour of labor moved from one good to the other yields the <em>same</em> change in output, no matter how much of either good you've already made. Graphically, the frontier is a <strong>straight line</strong> connecting the two max-output points; algebraically, the <strong>opportunity cost stays the same</strong> everywhere along it. That's why each country's whole production set is captured by just two numbers — the row in the table below.</p>
+  </div>
+`;
+
+function currentQuestions() {
+  return state.tab === "absolute"
+    ? genAbsoluteQuestions(state.scenario)
+    : genComparativeQuestions(state.scenario);
+}
+
+function renderConcept() {
+  document.getElementById("concept").innerHTML =
+    `<div class="concept">${CONCEPTS[state.tab]}</div>`;
+}
+
+function renderScore() {
+  // Cumulative across all questions in the current tab
+  let solved = 0, correct = 0;
+  const questions = currentQuestions();
+  questions.forEach(q => {
+    const s = state.stats[q.id];
+    if (s) { solved += s.attempts; correct += s.correct; }
+  });
+  document.getElementById("s-attempted").textContent = solved;
+  document.getElementById("s-correct").textContent = correct;
+  document.getElementById("s-accuracy").textContent =
+    solved === 0 ? "—" : `${Math.round((correct / solved) * 100)}%`;
+}
+
+function accClass(attempts, correct) {
+  if (!attempts) return "dim";
+  const pct = correct / attempts;
+  if (pct >= 0.8) return "acc-good";
+  if (pct >= 0.5) return "acc-mid";
+  return "acc-bad";
+}
+
+function renderQuestionStats(questions) {
+  const rows = questions.map(q => {
+    const s = state.stats[q.id] || { attempts: 0, correct: 0 };
+    const acc = s.attempts === 0 ? "—" : `${Math.round(s.correct / s.attempts * 100)}%`;
+    const cls = accClass(s.attempts, s.correct);
+    return `
+      <tr>
+        <td class="qlabel">${escapeHTML(QUESTION_LABELS[q.id] || q.id)}</td>
+        <td class="numeric ${s.attempts === 0 ? "dim" : ""}">${s.attempts}</td>
+        <td class="numeric ${s.attempts === 0 ? "dim" : ""}">${s.correct}</td>
+        <td class="numeric ${cls}">${acc}</td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div class="card">
+      <p class="card-label">Per-question performance · this tab</p>
+      <table class="ppf-table stats-table">
+        <thead>
+          <tr>
+            <th>Question type</th>
+            <th class="numeric">Attempts</th>
+            <th class="numeric">Correct</th>
+            <th class="numeric">Accuracy</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p class="ppf-note">Tracks every submission you've made on this tab, across all problems. Use it to spot which question type needs more practice.</p>
+    </div>
+  `;
+}
+
+function renderProductionTable(s) {
+  return `
+    <div class="card">
+      <div class="matrix-head">
+        <p class="card-label">Production possibilities · ${RESOURCE.label} of labor</p>
+        <button class="btn secondary small" id="btn-new">New problem</button>
+      </div>
+      <table class="ppf-table">
+        <thead>
+          <tr>
+            <th>Country</th>
+            <th class="numeric">Max ${s.goods[0]}</th>
+            <th class="numeric">Max ${s.goods[1]}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${s.countries.map((c, i) => `
+            <tr>
+              <td class="country-name">${c}</td>
+              <td class="numeric big">${s.maxOutput[i][0]}</td>
+              <td class="numeric big">${s.maxOutput[i][1]}</td>
+            </tr>`).join("")}
+        </tbody>
+      </table>
+      <p class="ppf-note">All four numbers are distinct. Each row gives the two endpoints of that country's linear PPF over ${RESOURCE.label} of labor.</p>
+    </div>
+  `;
+}
+
+function renderQuestion(q, index) {
+  const selected = state.answers[q.id];
+  const isSubmitted = !!state.submitted[q.id];
+  const isCorrect = selected === q.answer;
+
+  const cardClass = isSubmitted ? (isCorrect ? "correct" : "wrong") : "";
+
+  const optionsHTML = q.options.map(opt => {
+    const isThis = selected === opt;
+    const showCorrect = isSubmitted && opt === q.answer;
+    const showWrong = isSubmitted && isThis && !isCorrect;
+    const classes = [
+      "option",
+      isThis && !isSubmitted ? "selected" : "",
+      showCorrect ? "show-correct" : "",
+      showWrong ? "show-wrong" : "",
+    ].filter(Boolean).join(" ");
+    return `<button class="${classes}" data-q="${q.id}" data-opt="${escapeAttr(opt)}" ${isSubmitted ? "disabled" : ""}>${escapeHTML(opt)}</button>`;
+  }).join("");
+
+  const explanation = isSubmitted ? `
+    <div class="explanation ${isCorrect ? "correct" : "wrong"}">
+      <span class="verdict ${isCorrect ? "correct" : "wrong"}"><strong>${isCorrect ? "Correct." : `Incorrect — answer: ${escapeHTML(q.answer)}.`}</strong></span>
+      ${escapeHTML(q.reasoning)}
+    </div>
+  ` : "";
+
+  const actionRow = !isSubmitted ? `
+    <div class="q-actions">
+      <button class="btn small" data-submit-q="${q.id}" ${selected !== undefined ? "" : "disabled"}>Check answer</button>
+    </div>
+  ` : "";
+
+  return `
+    <div class="question ${cardClass} fade-up">
+      <div class="q-header">
+        <span class="q-tag">Q${index + 1}</span>
+        <p class="q-text">${escapeHTML(q.text)}</p>
+      </div>
+      <div class="options">${optionsHTML}</div>
+      ${actionRow}
+      ${explanation}
+    </div>
+  `;
+}
+
+function render() {
+  renderConcept();
+  const questions = currentQuestions();
+  renderScore();
+
+  document.getElementById("content").innerHTML = `
+    ${INTRO_HTML}
+    ${renderProductionTable(state.scenario)}
+    ${renderQuestionStats(questions)}
+    ${questions.map((q, i) => renderQuestion(q, i)).join("")}
+  `;
+
+  // Option buttons
+  document.querySelectorAll(".option").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const qId = btn.dataset.q;
+      if (state.submitted[qId]) return;
+      state.answers[qId] = btn.dataset.opt;
+      render();
+    });
+  });
+
+  // Per-question Check buttons
+  document.querySelectorAll("[data-submit-q]").forEach(btn => {
+    btn.addEventListener("click", () => handleSubmitQuestion(btn.dataset.submitQ));
+  });
+
+  // "New problem" button (always present)
+  const newBtn = document.getElementById("btn-new");
+  if (newBtn) newBtn.addEventListener("click", handleNew);
+}
+
+function handleSubmitQuestion(qId) {
+  if (state.submitted[qId]) return;
+  if (state.answers[qId] === undefined) return;
+
+  const questions = currentQuestions();
+  const q = questions.find(x => x.id === qId);
+  if (!q) return;
+
+  const correct = state.answers[qId] === q.answer;
+  state.submitted[qId] = true;
+
+  if (!state.stats[qId]) state.stats[qId] = { attempts: 0, correct: 0 };
+  state.stats[qId].attempts += 1;
+  if (correct) state.stats[qId].correct += 1;
+
+  render();
+}
+
+function handleNew() {
+  // Only swap out the current problem: new scenario, clear answers/submitted.
+  // Per-question stats (state.stats) and the active tab are preserved.
+  state.scenario = generateScenario();
+  state.answers = {};
+  state.submitted = {};
+  render();
+}
+
+function switchTab(t) {
+  if (t === state.tab) return;
+  state.tab = t;
+  state.answers = {};
+  state.submitted = {};
+  document.querySelectorAll(".tab").forEach(b => {
+    b.classList.toggle("active", b.dataset.tab === t);
+  });
+  render();
+}
+
+document.querySelectorAll(".tab").forEach(b => {
+  b.addEventListener("click", () => switchTab(b.dataset.tab));
+});
+
+/* ────────────────────────────────────────────────────────────────
+   Small utilities
+   ──────────────────────────────────────────────────────────────── */
+function escapeHTML(s) {
+  return String(s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function escapeAttr(s) {
+  return escapeHTML(s);
+}
+
+render();
+</script>
+</body>
+</html>
