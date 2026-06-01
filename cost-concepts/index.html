@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Different Types of Costs — BA 1310</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f1efe8;
+    --text: #1a1a1a;
+    --text-2: #5f5e5a;
+    --text-3: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-2: rgba(0,0,0,0.25);
+    --info-bg: #e6f1fb;
+    --info-text: #0c447c;
+    --correct-bg: #e6f4e7;
+    --correct-text: #2d7a32;
+    --correct-border: rgba(45,122,50,0.35);
+    --wrong-bg: #fdeaea;
+    --wrong-text: #b33a3a;
+    --wrong-border: rgba(179,58,58,0.35);
+    --warn-bg: #fbf2e6;
+    --warn-text: #8a5a17;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .back {
+    font-size: 13px;
+    color: var(--text-3);
+    margin: 0 0 1.5rem;
+  }
+  .back a { color: var(--info-text); text-decoration: none; }
+  .back a:hover { text-decoration: underline; }
+
+  header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .course {
+    font-size: 13px;
+    color: var(--text-3);
+    margin: 0 0 0.25rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: 30px;
+    font-weight: 500;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-2);
+    margin: 0;
+  }
+
+  /* ─── Tabs ─── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 1.75rem;
+  }
+  .tab {
+    background: none;
+    border: none;
+    padding: 10px 16px 12px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text-3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -0.5px;
+    transition: color 0.15s, border-color 0.15s;
+    font-weight: 500;
+  }
+  .tab:hover { color: var(--text-2); }
+  .tab.active {
+    color: var(--info-text);
+    border-bottom-color: var(--info-text);
+    font-weight: 600;
+  }
+
+  /* ─── Score bar ─── */
+  .score {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 12px 18px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 1.25rem;
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .score .stat-label {
+    color: var(--text-3);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    margin-right: 0.4rem;
+  }
+  .score .stat-value { color: var(--text); font-weight: 600; }
+
+  /* ─── Concept card (formula/explanation) ─── */
+  .concept {
+    background: var(--info-bg);
+    color: var(--info-text);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+  .concept code {
+    background: rgba(0,0,0,0.06);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  .concept strong { font-weight: 600; }
+
+  /* ─── Intro / context card (above matrix) ─── */
+  .intro-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+  .intro-card p { margin: 0 0 0.6rem; }
+  .intro-card p:last-child { margin: 0; }
+  .intro-card strong { color: var(--text); font-weight: 600; }
+  .intro-card em { font-style: italic; }
+
+  /* ─── Scenario table card ─── */
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    margin-bottom: 1.25rem;
+  }
+  .card-label {
+    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 500;
+    margin: 0 0 0.75rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .ppf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .ppf-table th, .ppf-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .ppf-table thead th {
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 0.5px solid var(--border-2);
+  }
+  .ppf-table td.numeric, .ppf-table th.numeric { text-align: center; }
+  .ppf-table .country-name { font-weight: 600; color: var(--text); }
+  .ppf-table .big { font-size: 16px; font-weight: 600; }
+  .ppf-table tbody tr:last-child td { border-bottom: none; }
+  .ppf-note {
+    font-size: 12px;
+    color: var(--text-3);
+    margin: 0.75rem 0 0;
+    line-height: 1.5;
+  }
+
+  /* ─── Per-question stats table ─── */
+  .stats-table .qlabel { font-weight: 500; color: var(--text); }
+  .stats-table .dim { color: var(--text-3); }
+  .stats-table .acc-good { color: var(--correct-text); font-weight: 600; }
+  .stats-table .acc-mid  { color: var(--warn-text); font-weight: 600; }
+  .stats-table .acc-bad  { color: var(--wrong-text); font-weight: 600; }
+
+  /* ─── New problem header bar (next to matrix) ─── */
+  .matrix-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+  .matrix-head .card-label { margin: 0; }
+
+  /* ─── Question card ─── */
+  .question {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    margin-bottom: 0.85rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .question.correct {
+    border-color: var(--correct-border);
+    background: var(--correct-bg);
+  }
+  .question.wrong {
+    border-color: var(--wrong-border);
+    background: var(--wrong-bg);
+  }
+  .q-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.85rem;
+  }
+  .q-tag {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: var(--radius-sm);
+    background: var(--info-bg);
+    color: var(--info-text);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .q-text {
+    margin: 0;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .option {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 7px 14px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .option:hover:not(:disabled) {
+    border-color: var(--border-2);
+    background: var(--surface-2);
+  }
+  .option.selected {
+    border-color: var(--info-text);
+    background: var(--info-bg);
+    color: var(--info-text);
+    font-weight: 500;
+  }
+  .option.show-correct {
+    border-color: var(--correct-text);
+    background: var(--correct-bg);
+    color: var(--correct-text);
+    font-weight: 500;
+  }
+  .option.show-wrong {
+    border-color: var(--wrong-text);
+    background: var(--wrong-bg);
+    color: var(--wrong-text);
+    text-decoration: line-through;
+  }
+  .option:disabled { cursor: default; }
+
+  .explanation {
+    margin-top: 0.85rem;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-2);
+    border-left: 2px solid var(--text-3);
+    background: rgba(0,0,0,0.025);
+  }
+  .explanation.correct {
+    border-left-color: var(--correct-text);
+    background: rgba(45,122,50,0.06);
+  }
+  .explanation.wrong {
+    border-left-color: var(--wrong-text);
+    background: rgba(179,58,58,0.06);
+  }
+  .explanation strong { color: var(--text); font-weight: 600; }
+  .explanation .verdict.correct { color: var(--correct-text); }
+  .explanation .verdict.wrong { color: var(--wrong-text); }
+
+  /* ─── Question-level action row ─── */
+  .q-actions {
+    margin-top: 0.85rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* ─── Action buttons ─── */
+  .btn {
+    background: var(--info-text);
+    color: #fff;
+    border: 0.5px solid var(--info-text);
+    border-radius: var(--radius-md);
+    padding: 10px 20px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, background 0.15s;
+  }
+  .btn:hover:not(:disabled) { opacity: 0.88; }
+  .btn:disabled {
+    background: var(--surface-2);
+    color: var(--text-3);
+    border-color: var(--border);
+    cursor: not-allowed;
+  }
+  .btn.secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 0.5px solid var(--border-2);
+  }
+  .btn.secondary:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+  .btn.small {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+
+  /* ─── Footer ─── */
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 0.5px solid var(--border);
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  footer a { color: var(--info-text); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ─── Animation ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.3s ease both; }
+
+  /* ─── Dark mode ─── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #2c2c2a;
+      --surface-2: #3a3a38;
+      --text: #f5f5f0;
+      --text-2: #b4b2a9;
+      --text-3: #888780;
+      --border: rgba(255,255,255,0.15);
+      --border-2: rgba(255,255,255,0.3);
+      --info-bg: #0c447c;
+      --info-text: #b5d4f4;
+      --correct-bg: rgba(45,122,50,0.18);
+      --correct-text: #8fd297;
+      --correct-border: rgba(143,210,151,0.35);
+      --wrong-bg: rgba(179,58,58,0.18);
+      --wrong-text: #f0a0a0;
+      --wrong-border: rgba(240,160,160,0.35);
+      --warn-bg: rgba(138,90,23,0.18);
+      --warn-text: #e5c489;
+    }
+    .option.show-correct { background: rgba(143,210,151,0.18); }
+    .option.show-wrong { background: rgba(240,160,160,0.18); }
+    .btn { background: var(--info-text); color: #0c447c; border-color: var(--info-text); }
+  }
+
+  /* ─── Mobile ─── */
+  @media (max-width: 600px) {
+    .container { padding: 2rem 1rem 3rem; }
+    h1 { font-size: 24px; }
+    .tab { padding: 10px 10px 12px; font-size: 13px; }
+    .question, .card { padding: 16px 16px; }
+    .ppf-table th, .ppf-table td { padding: 8px 8px; font-size: 13px; }
+    .intro-card { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <p class="back"><a href="../">← Teaching Tools</a></p>
+
+    <header>
+      <p class="course">BA 1310 · UT Dallas</p>
+      <h1>Different Types of Costs</h1>
+      <p class="subtitle">Explicit Costs · Implicit Costs · Sunk Costs · Economic vs. Accounting Profit — practice problems</p>
+    </header>
+
+    <div class="intro-card">
+      <!-- <p><strong>Opportunity Cost</strong> is the value of the next best alternative that is forgone when a choice is made. It represents what you give up by choosing one option over another.</p> -->
+      <p><strong>Explicit Costs</strong> are actual cash payments made by the firm or individual (out-of-pocket expenses). These appear in financial statements.</p>
+      <p><strong>Implicit Costs</strong> are the opportunity costs of using self-owned resources (for example, foregone salary or interest). These do not involve a direct cash outflow.</p>
+      <p><strong>Sunk Costs</strong> are costs that have already been incurred and cannot be recovered (or only partially recovered). They should be ignored in future decision-making.</p>
+    </div>
+
+    <div class="concept">
+      <p><strong>Accounting Profit</strong> = Total Revenue − Explicit Costs</p>
+      <p><strong>Economic Profit</strong> = Total Revenue − Explicit Costs − Implicit Costs</p>
+      <p>Economic profit accounts for opportunity costs and shows true resource allocation efficiency.</p>
+    </div>
+
+    <div class="score" id="score-bar">
+      <div><span class="stat-label">Attempted</span><span class="stat-value" id="s-attempted">0</span></div>
+      <div><span class="stat-label">Correct</span><span class="stat-value" id="s-correct">0</span></div>
+      <div><span class="stat-label">Accuracy</span><span class="stat-value" id="s-accuracy">—</span></div>
+    </div>
+
+    <div class="card" id="concept-stats"></div>
+
+    <div class="card">
+      <p class="card-label">Scenario statement</p>
+      <div id="scenario-summary"></div>
+      <div class="q-actions">
+        <button class="btn secondary" id="reset-btn" type="button">New problem</button>
+      </div>
+    </div>
+
+    <div id="question-list"></div>
+
+  </div>
+
+  <script>
+    const CONCEPT_LABELS = {
+      economic: "Economic profit",
+      explicit: "Explicit cost",
+      sunk: "Sunk cost",
+      implicit: "Implicit cost",
+    };
+
+    const scenarioTemplates = [
+      {
+        title: "Coffee shop finance statement",
+        generate: () => {
+          const revenue = randomInt(95, 130) * 1000;
+          const cogs = randomInt(22, 30) * 1000;
+          const wages = randomInt(35, 42) * 1000;
+          const rent = randomInt(18, 24) * 1000;
+          const marketing = randomInt(6, 10) * 1000;
+          const ownerSalary = randomInt(28, 36) * 1000;
+          const forgoneRent = randomInt(12, 18) * 1000;
+          const displayCost = randomInt(8, 14) * 1000;
+          return {
+            story: "The owner runs a neighborhood coffee shop. The income statement shows revenue from coffee sales, explicit operating costs, and extra costs from using her own resources. It also includes a past showroom display cost that was already paid and is therefore a sunk cost.",
+            revenue,
+            explicitItems: [
+              { label: "Coffee beans and supplies", value: cogs },
+              { label: "Wages for baristas", value: wages },
+              { label: "Store rent", value: rent },
+              { label: "Marketing expense", value: marketing },
+            ],
+            implicitItems: [
+              { label: "Foregone salary if owner worked elsewhere", value: ownerSalary },
+              { label: "Foregone rental income from owner-owned space", value: forgoneRent },
+            ],
+            sunkItem: { label: "Past showroom display", value: displayCost },
+            alternative: { label: "Freelance accounting job offer", value: ownerSalary },
+          };
+        },
+      },
+      {
+        title: "Consulting firm statement",
+        generate: () => {
+          const revenue = randomInt(120, 165) * 1000;
+          const software = randomInt(16, 22) * 1000;
+          const travel = randomInt(10, 16) * 1000;
+          const office = randomInt(26, 34) * 1000;
+          const subcontractors = randomInt(22, 28) * 1000;
+          const foregoneSalary = randomInt(48, 62) * 1000;
+          const forgoneInvestment = randomInt(14, 20) * 1000;
+          const equipment = randomInt(10, 15) * 1000;
+          return {
+            story: "A boutique consulting firm records its sales revenue and direct expenses, plus the implicit costs of using owner-managed staff and equipment. It also includes an irrecoverable equipment upgrade cost that was already paid and is treated as a sunk cost.",
+            revenue,
+            explicitItems: [
+              { label: "Software subscriptions", value: software },
+              { label: "Travel and client meetings", value: travel },
+              { label: "Office lease", value: office },
+              { label: "Subcontractor fees", value: subcontractors },
+            ],
+            implicitItems: [
+              { label: "Owner's forgone salary", value: foregoneSalary },
+              { label: "Foregone interest from investment", value: forgoneInvestment },
+            ],
+            sunkItem: { label: "Irrecoverable equipment upgrade", value: equipment },
+            alternative: { label: "Higher-paying role at a larger firm", value: foregoneSalary },
+          };
+        },
+      },
+      {
+        title: "Bakery income statement",
+        generate: () => {
+          const revenue = randomInt(80, 110) * 1000;
+          const flour = randomInt(14, 20) * 1000;
+          const labor = randomInt(28, 36) * 1000;
+          const utilities = randomInt(8, 12) * 1000;
+          const delivery = randomInt(6, 10) * 1000;
+          const forgoneSalary = randomInt(24, 32) * 1000;
+          const forgoneRental = randomInt(10, 14) * 1000;
+          const pastDisplay = randomInt(5, 9) * 1000;
+          return {
+            story: "A bakery prepares its financial results with ingredient costs, staff pay, and the hidden costs of using the owner's own resources. It also includes a custom oven installation that was already paid and is a sunk cost.",
+            revenue,
+            explicitItems: [
+              { label: "Flour and baking supplies", value: flour },
+              { label: "Baker wages", value: labor },
+              { label: "Utilities and gas", value: utilities },
+              { label: "Delivery services", value: delivery },
+            ],
+            implicitItems: [
+              { label: "Owner's forgone salary", value: forgoneSalary },
+              { label: "Foregone rental income on owned space", value: forgoneRental },
+            ],
+            sunkItem: { label: "Custom oven installation", value: pastDisplay },
+            alternative: { label: "Head baker position at a café", value: forgoneSalary },
+          };
+        },
+      },
+      {
+        title: "Design studio financial summary",
+        generate: () => {
+          const revenue = randomInt(70, 105) * 1000;
+          const software = randomInt(12, 18) * 1000;
+          const contractor = randomInt(16, 22) * 1000;
+          const rent = randomInt(14, 20) * 1000;
+          const supplies = randomInt(8, 12) * 1000;
+          const forgoneSalary = randomInt(32, 40) * 1000;
+          const forgoneRental = randomInt(8, 12) * 1000;
+          const sunkDesign = randomInt(7, 11) * 1000;
+          return {
+            story: "A design studio reports its project revenue, explicit expenses, and hidden costs tied to owning its own workspace and tools. It also includes a previous branding package cost that was already paid and is a sunk cost.",
+            revenue,
+            explicitItems: [
+              { label: "Design software", value: software },
+              { label: "Freelance contractor fees", value: contractor },
+              { label: "Studio rent", value: rent },
+              { label: "Art supplies", value: supplies },
+            ],
+            implicitItems: [
+              { label: "Owner's forgone salary", value: forgoneSalary },
+              { label: "Foregone rental income from studio space", value: forgoneRental },
+            ],
+            sunkItem: { label: "Previous branding package", value: sunkDesign },
+            alternative: { label: "Senior designer role elsewhere", value: forgoneSalary },
+          };
+        },
+      },
+    ];
+
+    const state = {
+      scenarioIndex: 0,
+      stats: {
+        explicit: { attempts: 0, correct: 0 },
+        implicit: { attempts: 0, correct: 0 },
+        sunk: { attempts: 0, correct: 0 },
+        economic: { attempts: 0, correct: 0 },
+      },
+      answered: {},
+      scenarioData: [],
+    };
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    function formatMoney(value) {
+      return "$" + value.toLocaleString();
+    }
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function formatLine(label, value) {
+      return `<p><strong>${label}:</strong> ${formatMoney(value)}</p>`;
+    }
+
+    function accClass(attempts, correct) {
+      if (!attempts) return "dim";
+      const pct = correct / attempts;
+      if (pct >= 0.8) return "acc-good";
+      if (pct >= 0.5) return "acc-mid";
+      return "acc-bad";
+    }
+
+    function buildScenarioData() {
+      return scenarioTemplates.map(template => template.generate());
+    }
+
+    function getScenario() {
+      return state.scenarioData[state.scenarioIndex];
+    }
+
+    function buildQuestions(scenario) {
+      const explicitTotal = scenario.explicitItems.reduce((sum, item) => sum + item.value, 0);
+      const implicitTotal = scenario.implicitItems.reduce((sum, item) => sum + item.value, 0);
+      const accountingProfit = scenario.revenue - explicitTotal;
+      const economicProfit = accountingProfit - implicitTotal;
+
+      return [
+        {
+          id: "explicit",
+          concept: "explicit",
+          title: "Explicit cost",
+          prompt: `Which of the following is an explicit cost from this scenario?`,
+          options: shuffle([
+            { text: scenario.explicitItems[0].label, correct: true },
+            { text: scenario.implicitItems[0].label, correct: false },
+            { text: scenario.sunkItem.label, correct: false },
+            { text: scenario.alternative.label, correct: false },
+          ]),
+          explanation: `Explicit costs are direct cash payments related to the business's operations. ${scenario.explicitItems[0].label} is a direct operating expense on the income statement.`,
+        },
+        {
+          id: "explicit-total",
+          concept: "explicit",
+          title: "Total explicit cost",
+          prompt: `What is the total explicit cost for this scenario?`,
+          options: shuffle([
+            { text: formatMoney(explicitTotal), correct: true },
+            { text: formatMoney(explicitTotal + scenario.implicitItems[0].value), correct: false },
+            { text: formatMoney(explicitTotal - scenario.explicitItems[0].value), correct: false },
+            { text: formatMoney(scenario.revenue - implicitTotal), correct: false },
+          ]),
+          explanation: `Total explicit cost is the sum of the scenario's direct operating expenses: ${scenario.explicitItems.map(item => item.label).join(", ")}.`,
+        },
+        {
+          id: "implicit",
+          concept: "implicit",
+          title: "Implicit cost",
+          prompt: `In this business scenario, which cost is best described as an implicit cost?`,
+          options: shuffle([
+            { text: scenario.implicitItems[0].label, correct: true },
+            { text: scenario.explicitItems[1].label, correct: false },
+            { text: scenario.sunkItem.label, correct: false },
+            { text: scenario.alternative.label, correct: false },
+          ]),
+          explanation: `Implicit costs are forgone earnings or other non-cash costs. ${scenario.implicitItems[0].label} is an example of such a cost.`,
+        },
+        {
+          id: "implicit-total",
+          concept: "implicit",
+          title: "Total implicit cost",
+          prompt: `What is the total implicit cost for this scenario?`,
+          options: shuffle([
+            { text: formatMoney(implicitTotal), correct: true },
+            { text: formatMoney(explicitTotal), correct: false },
+            { text: formatMoney(scenario.alternative.value), correct: false },
+            { text: formatMoney(implicitTotal + scenario.sunkItem.value), correct: false },
+          ]),
+          explanation: `Total implicit cost is the sum of the non-cash forgone costs in the scenario: ${scenario.implicitItems.map(item => item.label).join(", ")}.`,
+        },
+        {
+          id: "sunk",
+          concept: "sunk",
+          title: "Sunk cost",
+          prompt: `Which cost should be ignored when deciding future production because it cannot be recovered?`,
+          options: shuffle([
+            { text: scenario.sunkItem.label, correct: true },
+            { text: scenario.explicitItems[2].label, correct: false },
+            { text: scenario.implicitItems[1].label, correct: false },
+            { text: formatMoney(accountingProfit), correct: false },
+          ]),
+          explanation: `A sunk cost is already incurred and cannot be recovered. ${scenario.sunkItem.label} fits this definition.`,
+        },
+        {
+          id: "economic",
+          concept: "economic",
+          title: "Economic profit",
+          prompt: `Using the financial numbers above, what is the economic profit?`,
+          options: shuffle([
+            { text: formatMoney(economicProfit), correct: true },
+            { text: formatMoney(accountingProfit), correct: false },
+            { text: formatMoney(scenario.revenue - scenario.implicitItems[0].value), correct: false },
+            { text: "Zero", correct: false },
+          ]),
+          explanation: `Economic profit subtracts both explicit and implicit costs from revenue. ${formatMoney(scenario.revenue)} − ${formatMoney(explicitTotal)} − ${formatMoney(implicitTotal)} = ${formatMoney(economicProfit)}.`,
+        },
+      ];
+    }
+
+    function renderScenarioSummary() {
+      const scenario = getScenario();
+      const explicitTotal = scenario.explicitItems.reduce((sum, item) => sum + item.value, 0);
+      const implicitTotal = scenario.implicitItems.reduce((sum, item) => sum + item.value, 0);
+      const accountingProfit = scenario.revenue - explicitTotal;
+      const summary = document.getElementById("scenario-summary");
+      summary.innerHTML = `
+        <p>${scenario.story}</p>
+        <p><strong>Total revenue:</strong> ${formatMoney(scenario.revenue)}</p>
+        ${scenario.explicitItems.map(item => formatLine(item.label, item.value)).join("")}
+        ${scenario.implicitItems.map(item => formatLine(item.label, item.value)).join("")}
+        <p>${formatLine(scenario.sunkItem.label, scenario.sunkItem.value)}</p>
+      `;
+    }
+
+    function renderConceptStats() {
+      const rows = Object.entries(state.stats).map(([key, value]) => {
+        const accuracy = value.attempts === 0 ? "—" : `${Math.round((value.correct / value.attempts) * 100)}%`;
+        const cls = accClass(value.attempts, value.correct);
+        return `
+          <tr>
+            <td class="qlabel">${CONCEPT_LABELS[key]}</td>
+            <td class="numeric ${value.attempts === 0 ? "dim" : ""}">${value.attempts}</td>
+            <td class="numeric ${value.attempts === 0 ? "dim" : ""}">${value.correct}</td>
+            <td class="numeric ${cls}">${accuracy}</td>
+          </tr>
+        `;
+      }).join("");
+
+      document.getElementById("concept-stats").innerHTML = `
+        <p class="card-label">Per-concept performance</p>
+        <table class="ppf-table stats-table">
+          <thead>
+            <tr>
+              <th>Concept</th>
+              <th class="numeric">Attempts</th>
+              <th class="numeric">Correct</th>
+              <th class="numeric">Accuracy</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function renderQuestions() {
+      questions = buildQuestions(getScenario());
+      const list = document.getElementById("question-list");
+      list.innerHTML = "";
+      questions.forEach((question) => {
+        const card = document.createElement("div");
+        card.className = "question";
+        card.id = question.id;
+
+        const header = document.createElement("div");
+        header.className = "q-header";
+        header.innerHTML = `<span class="q-tag">${question.title}</span><p class="q-text">${question.prompt}</p>`;
+        card.appendChild(header);
+
+        const choices = document.createElement("div");
+        choices.className = "options";
+        choices.id = `options-${question.id}`;
+
+        question.options.forEach((option, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "option";
+          button.textContent = option.text;
+          button.addEventListener("click", () => selectOption(question.id, index));
+          choices.appendChild(button);
+        });
+
+        card.appendChild(choices);
+
+        const actions = document.createElement("div");
+        actions.className = "q-actions";
+        const submit = document.createElement("button");
+        submit.type = "button";
+        submit.className = "btn";
+        submit.textContent = "Check answer";
+        submit.addEventListener("click", () => submitAnswer(question.id));
+        actions.appendChild(submit);
+        card.appendChild(actions);
+
+        const explanation = document.createElement("div");
+        explanation.className = "explanation";
+        explanation.id = `explanation-${question.id}`;
+        explanation.hidden = true;
+        card.appendChild(explanation);
+
+        list.appendChild(card);
+      });
+    }
+
+    function renderScore() {
+      const attempted = Object.values(state.stats).reduce((sum, item) => sum + item.attempts, 0);
+      const correct = Object.values(state.stats).reduce((sum, item) => sum + item.correct, 0);
+      const accuracy = attempted === 0 ? "—" : `${Math.round((correct / attempted) * 100)}%`;
+      document.getElementById("s-attempted").textContent = attempted;
+      document.getElementById("s-correct").textContent = correct;
+      document.getElementById("s-accuracy").textContent = accuracy;
+    }
+
+    function selectOption(questionId, optionIndex) {
+      if (state.answered[questionId]) return;
+      const optionButtons = document.querySelectorAll(`#options-${questionId} .option`);
+      optionButtons.forEach((button, index) => {
+        button.classList.toggle("selected", index === optionIndex);
+      });
+      const question = questions.find((item) => item.id === questionId);
+      question.selected = optionIndex;
+    }
+
+    function submitAnswer(questionId) {
+      const question = questions.find((item) => item.id === questionId);
+      if (state.answered[questionId] || question.selected === undefined) return;
+
+      const choice = question.options[question.selected];
+      const correct = choice.correct;
+      state.answered[questionId] = true;
+      state.stats[question.concept].attempts += 1;
+      if (correct) state.stats[question.concept].correct += 1;
+
+      const card = document.getElementById(questionId);
+      card.classList.add(correct ? "correct" : "wrong");
+
+      const optionButtons = document.querySelectorAll(`#options-${questionId} .option`);
+      optionButtons.forEach((button, index) => {
+        button.disabled = true;
+        if (question.options[index].correct) button.classList.add("show-correct");
+        if (index === question.selected && !question.options[index].correct) button.classList.add("show-wrong");
+      });
+
+      const explanation = document.getElementById(`explanation-${question.id}`);
+      explanation.className = `explanation ${correct ? "correct" : "wrong"}`;
+      explanation.innerHTML = `<strong>${correct ? "Correct." : "Incorrect."}</strong> ${question.explanation}`;
+      explanation.hidden = false;
+      renderScore();
+      renderConceptStats();
+    }
+
+    function renderScenario() {
+      renderScenarioSummary();
+      state.answered = {};
+      renderQuestions();
+      renderScore();
+      renderConceptStats();
+    }
+
+    document.getElementById("reset-btn").addEventListener("click", () => {
+      state.scenarioData = buildScenarioData();
+      state.scenarioIndex = randomInt(0, scenarioTemplates.length - 1);
+      state.answered = {};
+      renderScenario();
+    });
+
+    state.scenarioData = buildScenarioData();
+    state.scenarioIndex = randomInt(0, scenarioTemplates.length - 1);
+    renderScenario();
+  </script>
+
+</body>
