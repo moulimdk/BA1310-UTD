@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elasticity Practice — BA 1310</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f1efe8;
+    --text: #1a1a1a;
+    --text-2: #5f5e5a;
+    --text-3: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-2: rgba(0,0,0,0.25);
+    --info-bg: #e6f1fb;
+    --info-text: #0c447c;
+    --info-border: #378add;
+    --success-bg: #eaf3de;
+    --success-text: #27500a;
+    --error-bg: #fce8e8;
+    --error-text: #7c0c0c;
+    --warn-bg: #fdf6e3;
+    --warn-text: #6b4e00;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #2c2c2a;
+      --surface-2: #3a3a38;
+      --text: #f5f5f0;
+      --text-2: #b4b2a9;
+      --text-3: #888780;
+      --border: rgba(255,255,255,0.15);
+      --border-2: rgba(255,255,255,0.3);
+      --info-bg: #0c447c;
+      --info-text: #b5d4f4;
+      --info-border: #378add;
+      --success-bg: #27500a;
+      --success-text: #c0dd97;
+      --error-bg: #4a1010;
+      --error-text: #f5b4b4;
+      --warn-bg: #3a3000;
+      --warn-text: #e8d48b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* ── layout ── */
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+  header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+  header a {
+    color: var(--text-2);
+    text-decoration: none;
+    font-size: 13px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+  header a:hover { color: var(--text); }
+  .site-label {
+    font-size: 12px;
+    color: var(--text-3);
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 500;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-2);
+    margin: 0;
+  }
+
+  /* ── tabs ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-2);
+    cursor: pointer;
+    font-family: inherit;
+    transition: color 0.15s;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    border-bottom-color: var(--text);
+    font-weight: 500;
+    color: var(--text);
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── concept card ── */
+  .intro {
+    background: var(--surface-2);
+    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.5rem;
+  }
+  .intro p { margin: 0 0 6px; font-size: 14px; color: var(--text-2); line-height: 1.7; }
+  .intro p:last-child { margin-bottom: 0; }
+  .intro strong { color: var(--text); font-weight: 500; }
+
+  .formula-box {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin: 10px 0;
+    text-align: center;
+    font-size: 15px;
+    line-height: 2;
+    color: var(--text);
+  }
+  .frac {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0 4px;
+  }
+  .frac .num { border-bottom: 1px solid var(--text-2); padding-bottom: 2px; }
+  .frac .den { padding-top: 2px; }
+
+  .classify-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .chip {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    color: var(--text-2);
+  }
+  .chip b { color: var(--text); font-weight: 500; }
+
+  /* ── score bar ── */
+  .score-bar {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  .score-bar span { color: var(--text-2); font-weight: 500; }
+
+  /* ── problem card ── */
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 14px;
+  }
+  .scenario-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+    margin-bottom: 6px;
+  }
+  .scenario-text {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  .step-group { margin-bottom: 14px; }
+  .step-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .step-hint {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-bottom: 5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .input-row input[type="number"] {
+    width: 140px;
+    padding: 8px 12px;
+    border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-family: inherit;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .input-row input:focus { border-color: var(--info-border); }
+  .input-row .unit { font-size: 13px; color: var(--text-3); }
+
+  select.field {
+    padding: 8px 12px;
+    border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  /* ── buttons ── */
+  .btn {
+    padding: 9px 16px;
+    font-size: 13px;
+    background: var(--surface);
+    border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text);
+    transition: background 0.15s;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+  .btn:disabled:hover { background: var(--surface); }
+
+  .btn-primary {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+  .btn-primary:hover { opacity: 0.85; background: var(--text); }
+  .btn-primary:disabled { opacity: 0.3; }
+  .btn-primary:disabled:hover { background: var(--text); }
+
+  .btn-row { display: flex; gap: 8px; align-items: center; margin-top: 18px; }
+  .btn-next { display: none; }
+
+  /* ── feedback ── */
+  .feedback {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    line-height: 1.65;
+    display: none;
+  }
+  .feedback.correct { background: var(--success-bg); color: var(--success-text); display: block; }
+  .feedback.wrong   { background: var(--error-bg);   color: var(--error-text);   display: block; }
+  .feedback strong { font-weight: 500; }
+
+  .interpretation {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: var(--warn-bg);
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    color: var(--warn-text);
+    line-height: 1.7;
+    display: none;
+  }
+  .interpretation.show { display: block; }
+  .interpretation strong { font-weight: 500; }
+
+  /* ── responsive ── */
+  @media (max-width: 640px) {
+    .container { padding: 1.5rem 1rem 3rem; }
+    h1 { font-size: 22px; }
+    .tab-btn { padding: 9px 12px; font-size: 13px; }
+    .card { padding: 16px; }
+    .input-row input[type="number"] { width: 120px; }
+    .classify-row { gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+  <a href="https://moulimdk.github.io/BA1310-UTD/">← Teaching Tools</a>
+  <div class="site-label">BA 1310 · UT Dallas</div>
+  <h1>Elasticity Practice</h1>
+  <p class="subtitle">Price Elasticity of Demand · Price Elasticity of Supply · Cross-Price Elasticity · Income Elasticity</p>
+</header>
+
+<!-- ── Tabs ── -->
+<div class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="ped" role="tab">Price Elasticity of Demand</button>
+  <button class="tab-btn" data-tab="pes" role="tab">Price Elasticity of Supply</button>
+  <button class="tab-btn" data-tab="xed" role="tab">Cross-Price Elasticity</button>
+  <button class="tab-btn" data-tab="yed" role="tab">Income Elasticity</button>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 1 — PRICE ELASTICITY OF DEMAND
+     ═══════════════════════════════════════════ -->
+<div class="tab-panel active" id="panel-ped">
+
+  <div class="intro">
+    <p><strong>Definition:</strong> the size of the change in the quantity demanded of a good or service when its price changes.</p>
+    <div class="formula-box">
+      Elasticity =
+      <span class="frac"><span class="num">% change in Q<sub>D</sub></span><span class="den">% change in P</span></span>
+      &nbsp;&nbsp;using the <strong>midpoint method</strong>:&nbsp;
+      % change =
+      <span class="frac"><span class="num">New − Old</span><span class="den">(New + Old) / 2</span></span>
+      × 100
+    </div>
+    <div class="classify-row">
+      <span class="chip"><b>|E| &gt; 1</b> &thinsp;Elastic</span>
+      <span class="chip"><b>|E| = 1</b> &thinsp;Unit-elastic</span>
+      <span class="chip"><b>|E| &lt; 1</b> &thinsp;Inelastic</span>
+    </div>
+  </div>
+
+  <div class="score-bar">
+    Attempted <span id="ped-attempted">0</span>
+    &nbsp;·&nbsp; Correct <span id="ped-correct">0</span>
+    &nbsp;·&nbsp; Accuracy <span id="ped-accuracy">—</span>
+  </div>
+
+  <div class="card" id="ped-card">
+    <div class="scenario-label">Scenario</div>
+    <div class="scenario-text" id="ped-scenario"></div>
+
+    <div class="step-group">
+      <label>Step 1 — % change in Quantity Demanded</label>
+      <div class="step-hint">= ((New Q − Old Q) / ((New Q + Old Q) / 2)) × 100</div>
+      <div class="input-row"><input type="number" id="ped-pctQ" step="any" placeholder="e.g. 40"> <span class="unit">%</span></div>
+    </div>
+    <div class="step-group">
+      <label>Step 2 — % change in Price</label>
+      <div class="step-hint">= ((New P − Old P) / ((New P + Old P) / 2)) × 100</div>
+      <div class="input-row"><input type="number" id="ped-pctP" step="any" placeholder="e.g. −22.22"> <span class="unit">%</span></div>
+    </div>
+    <div class="step-group">
+      <label>Step 3 — Elasticity (round to 2 decimal places)</label>
+      <div class="step-hint">= % change in Q_D ÷ % change in P</div>
+      <div class="input-row"><input type="number" id="ped-elast" step="any" placeholder="e.g. −1.80"></div>
+    </div>
+    <div class="step-group">
+      <label>Step 4 — Classification</label>
+      <select class="field" id="ped-class">
+        <option value="">— select —</option>
+        <option value="elastic">Elastic (|E| &gt; 1)</option>
+        <option value="unit">Unit-elastic (|E| = 1)</option>
+        <option value="inelastic">Inelastic (|E| &lt; 1)</option>
+      </select>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="check('ped')">Check answer</button>
+      <button class="btn btn-next" id="ped-next" onclick="generate('ped')">Next problem →</button>
+    </div>
+    <div class="feedback" id="ped-feedback"></div>
+    <div class="interpretation" id="ped-interpret"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 2 — PRICE ELASTICITY OF SUPPLY
+     ═══════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-pes">
+
+  <div class="intro">
+    <p><strong>Definition:</strong> the size of the change in the quantity supplied of a good or service when its price changes.</p>
+    <div class="formula-box">
+      Elasticity =
+      <span class="frac"><span class="num">% change in Q<sub>S</sub></span><span class="den">% change in P</span></span>
+      &nbsp;&nbsp;using the <strong>midpoint method</strong>:&nbsp;
+      % change =
+      <span class="frac"><span class="num">New − Old</span><span class="den">(New + Old) / 2</span></span>
+      × 100
+    </div>
+    <div class="classify-row">
+      <span class="chip"><b>E &gt; 1</b> &thinsp;Elastic</span>
+      <span class="chip"><b>E = 1</b> &thinsp;Unit-elastic</span>
+      <span class="chip"><b>E &lt; 1</b> &thinsp;Inelastic</span>
+    </div>
+  </div>
+
+  <div class="score-bar">
+    Attempted <span id="pes-attempted">0</span>
+    &nbsp;·&nbsp; Correct <span id="pes-correct">0</span>
+    &nbsp;·&nbsp; Accuracy <span id="pes-accuracy">—</span>
+  </div>
+
+  <div class="card" id="pes-card">
+    <div class="scenario-label">Scenario</div>
+    <div class="scenario-text" id="pes-scenario"></div>
+
+    <div class="step-group">
+      <label>Step 1 — % change in Quantity Supplied</label>
+      <div class="step-hint">= ((New Q − Old Q) / ((New Q + Old Q) / 2)) × 100</div>
+      <div class="input-row"><input type="number" id="pes-pctQ" step="any" placeholder="e.g. 10.53"> <span class="unit">%</span></div>
+    </div>
+    <div class="step-group">
+      <label>Step 2 — % change in Price</label>
+      <div class="step-hint">= ((New P − Old P) / ((New P + Old P) / 2)) × 100</div>
+      <div class="input-row"><input type="number" id="pes-pctP" step="any" placeholder="e.g. 18.18"> <span class="unit">%</span></div>
+    </div>
+    <div class="step-group">
+      <label>Step 3 — Elasticity (round to 2 decimal places)</label>
+      <div class="step-hint">= % change in Q_S ÷ % change in P</div>
+      <div class="input-row"><input type="number" id="pes-elast" step="any" placeholder="e.g. 0.58"></div>
+    </div>
+    <div class="step-group">
+      <label>Step 4 — Classification</label>
+      <select class="field" id="pes-class">
+        <option value="">— select —</option>
+        <option value="elastic">Elastic (E &gt; 1)</option>
+        <option value="unit">Unit-elastic (E = 1)</option>
+        <option value="inelastic">Inelastic (E &lt; 1)</option>
+      </select>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="check('pes')">Check answer</button>
+      <button class="btn btn-next" id="pes-next" onclick="generate('pes')">Next problem →</button>
+    </div>
+    <div class="feedback" id="pes-feedback"></div>
+    <div class="interpretation" id="pes-interpret"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 3 — CROSS-PRICE ELASTICITY
+     ═══════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-xed">
+
+  <div class="intro">
+    <p><strong>Definition:</strong> a measure of how the demand for one good changes when the price of a different good changes.</p>
+    <div class="formula-box">
+      Cross-Price Elasticity =
+      <span class="frac"><span class="num">% change in quantity of A demanded</span><span class="den">% change in price of B</span></span>
+      &nbsp; (midpoint method)
+    </div>
+    <div class="classify-row">
+      <span class="chip"><b>E &gt; 0</b> &thinsp;Substitutes</span>
+      <span class="chip"><b>E &lt; 0</b> &thinsp;Complements</span>
+      <span class="chip"><b>E = 0</b> &thinsp;Unrelated</span>
+    </div>
+  </div>
+
+  <div class="score-bar">
+    Attempted <span id="xed-attempted">0</span>
+    &nbsp;·&nbsp; Correct <span id="xed-correct">0</span>
+    &nbsp;·&nbsp; Accuracy <span id="xed-accuracy">—</span>
+  </div>
+
+  <div class="card" id="xed-card">
+    <div class="scenario-label">Scenario</div>
+    <div class="scenario-text" id="xed-scenario"></div>
+
+    <div class="step-group">
+      <label>Step 1 — % change in Quantity of Good A Demanded</label>
+      <div class="step-hint">= ((New Q_A − Old Q_A) / ((New Q_A + Old Q_A) / 2)) × 100</div>
+      <div class="input-row"><input type="number" id="xed-pctQ" step="any" placeholder="e.g. 22.22"> <span class="unit">%</span></div>
+    </div>
+    <div class="step-group">
+      <label>Step 2 — % change in Price of Good B</label>
+      <div class="step-hint">= ((New P_B − Old P_B) / ((New P_B + Old P_B) / 2)) × 100</div>
+      <div class="input-row"><input type="number" id="xed-pctP" step="any" placeholder="e.g. 15.38"> <span class="unit">%</span></div>
+    </div>
+    <div class="step-group">
+      <label>Step 3 — Cross-Price Elasticity (round to 2 decimal places)</label>
+      <div class="step-hint">= % change in Q_A ÷ % change in P_B</div>
+      <div class="input-row"><input type="number" id="xed-elast" step="any" placeholder="e.g. 1.44"></div>
+    </div>
+    <div class="step-group">
+      <label>Step 4 — Relationship between the goods</label>
+      <select class="field" id="xed-class">
+        <option value="">— select —</option>
+        <option value="substitutes">Substitutes (E &gt; 0)</option>
+        <option value="complements">Complements (E &lt; 0)</option>
+      </select>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="check('xed')">Check answer</button>
+      <button class="btn btn-next" id="xed-next" onclick="generate('xed')">Next problem →</button>
+    </div>
+    <div class="feedback" id="xed-feedback"></div>
+    <div class="interpretation" id="xed-interpret"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 4 — INCOME ELASTICITY
+     ═══════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-yed">
+
+  <div class="intro">
+    <p><strong>Definition:</strong> a measure of how much the demand for a good changes in response to a change in consumers' incomes.</p>
+    <div class="formula-box">
+      Income Elasticity =
+      <span class="frac"><span class="num">% change in quantity demanded</span><span class="den">% change in income</span></span>
+      &nbsp; (midpoint method)
+    </div>
+    <div class="classify-row">
+      <span class="chip"><b>E &gt; 1</b> &thinsp;Normal — Luxury</span>
+      <span class="chip"><b>0 &lt; E &lt; 1</b> &thinsp;Normal — Necessity</span>
+      <span class="chip"><b>E &lt; 0</b> &thinsp;Inferior good</span>
+    </div>
+  </div>
+
+  <div class="score-bar">
+    Attempted <span id="yed-attempted">0</span>
+    &nbsp;·&nbsp; Correct <span id="yed-correct">0</span>
+    &nbsp;·&nbsp; Accuracy <span id="yed-accuracy">—</span>
+  </div>
+
+  <div class="card" id="yed-card">
+    <div class="scenario-label">Scenario</div>
+    <div class="scenario-text" id="yed-scenario"></div>
+
+    <div class="step-group">
+      <label>Step 1 — % change in Quantity Demanded</label>
+      <div class="step-hint">= ((New Q − Old Q) / ((New Q + Old Q) / 2)) × 100</div>
+      <div class="input-row"><input type="number" id="yed-pctQ" step="any" placeholder="e.g. 33.33"> <span class="unit">%</span></div>
+    </div>
+    <div class="step-group">
+      <label>Step 2 — % change in Income</label>
+      <div class="step-hint">= ((New I − Old I) / ((New I + Old I) / 2)) × 100</div>
+      <div class="input-row"><input type="number" id="yed-pctI" step="any" placeholder="e.g. 18.18"> <span class="unit">%</span></div>
+    </div>
+    <div class="step-group">
+      <label>Step 3 — Income Elasticity (round to 2 decimal places)</label>
+      <div class="step-hint">= % change in Q ÷ % change in Income</div>
+      <div class="input-row"><input type="number" id="yed-elast" step="any" placeholder="e.g. 1.83"></div>
+    </div>
+    <div class="step-group">
+      <label>Step 4 — Classification</label>
+      <select class="field" id="yed-class">
+        <option value="">— select —</option>
+        <option value="luxury">Normal good — Luxury (E &gt; 1)</option>
+        <option value="necessity">Normal good — Necessity (0 &lt; E &lt; 1)</option>
+        <option value="inferior">Inferior good (E &lt; 0)</option>
+      </select>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="check('yed')">Check answer</button>
+      <button class="btn btn-next" id="yed-next" onclick="generate('yed')">Next problem →</button>
+    </div>
+    <div class="feedback" id="yed-feedback"></div>
+    <div class="interpretation" id="yed-interpret"></div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+/* ═══════════════════════════════════════════════
+   Tabs
+   ═══════════════════════════════════════════════ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ═══════════════════════════════════════════════
+   Utilities
+   ═══════════════════════════════════════════════ */
+const rand = (lo, hi) => Math.floor(Math.random() * (hi - lo + 1)) + lo;
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const r2 = n => Math.round(n * 100) / 100;
+const close = (a, b, tol) => Math.abs(a - b) <= tol;
+
+/* MIDPOINT % change */
+function midpointPct(oldV, newV) {
+  return ((newV - oldV) / ((newV + oldV) / 2)) * 100;
+}
+
+/* ═══════════════════════════════════════════════
+   Scenario templates
+   ═══════════════════════════════════════════════ */
+
+/* --- PED --- */
+const pedScenarios = [
+  (p1,p2,q1,q2) => `The price of coffee rises from $${p1} to $${p2} per cup. As a result, quantity demanded falls from ${q1} million cups to ${q2} million cups per month.`,
+  (p1,p2,q1,q2) => `A streaming service changes its monthly subscription from $${p1} to $${p2}. The number of subscribers moves from ${q1} million to ${q2} million.`,
+  (p1,p2,q1,q2) => `The price of gasoline changes from $${p1} to $${p2} per gallon. Weekly purchases move from ${q1} million gallons to ${q2} million gallons.`,
+  (p1,p2,q1,q2) => `A pizzeria changes its large pizza price from $${p1} to $${p2}. Weekly sales move from ${q1} pizzas to ${q2} pizzas.`,
+  (p1,p2,q1,q2) => `The price of a bestselling novel changes from $${p1} to $${p2}. Monthly sales move from ${q1},000 copies to ${q2},000 copies.`,
+];
+
+/* --- PES --- */
+const pesScenarios = [
+  (p1,p2,q1,q2) => `The price of wheat rises from $${p1} to $${p2} per bushel. Farmers increase production from ${q1} million bushels to ${q2} million bushels per season.`,
+  (p1,p2,q1,q2) => `Handmade candle prices increase from $${p1} to $${p2}. Monthly output from local producers rises from ${q1} candles to ${q2} candles.`,
+  (p1,p2,q1,q2) => `The price of crude oil goes up from $${p1} to $${p2} per barrel. Producers increase supply from ${q1} million barrels to ${q2} million barrels per day.`,
+  (p1,p2,q1,q2) => `Avocado prices rise from $${p1} to $${p2} each. Growers expand weekly shipments from ${q1},000 to ${q2},000 avocados.`,
+  (p1,p2,q1,q2) => `Lumber prices increase from $${p1} to $${p2} per board foot. Sawmills boost output from ${q1} million board feet to ${q2} million board feet per month.`,
+];
+
+/* --- XED --- */
+const xedPairs = [
+  { A:'Pepsi',            B:'Coca-Cola',          type:'sub' },
+  { A:'Toyota sedans',    B:'Honda sedans',       type:'sub' },
+  { A:'butter',           B:'margarine',          type:'sub' },
+  { A:'Android phones',   B:'iPhones',            type:'sub' },
+  { A:'Uber rides',       B:'taxi rides',         type:'sub' },
+  { A:'hot dog buns',     B:'hot dogs',           type:'comp' },
+  { A:'printer ink',      B:'printers',           type:'comp' },
+  { A:'game controllers', B:'video game consoles',type:'comp' },
+  { A:'gasoline',         B:'SUVs',               type:'comp' },
+  { A:'peanut butter',    B:'jelly',              type:'comp' },
+];
+const xedTemplates = [
+  (pB1,pB2,qA1,qA2,A,B) => `The price of ${B} changes from $${pB1} to $${pB2}. As a result, the quantity demanded of ${A} changes from ${qA1} units to ${qA2} units per month.`,
+  (pB1,pB2,qA1,qA2,A,B) => `When the price of ${B} moves from $${pB1} to $${pB2}, demand for ${A} shifts from ${qA1},000 to ${qA2},000 units monthly.`,
+  (pB1,pB2,qA1,qA2,A,B) => `${B} prices change from $${pB1} to $${pB2}. Weekly demand for ${A} moves from ${qA1} units to ${qA2} units.`,
+];
+
+/* --- YED --- */
+const yedGoods = [
+  { name:'designer handbags',        type:'luxury' },
+  { name:'private tutoring sessions', type:'luxury' },
+  { name:'organic groceries',        type:'luxury' },
+  { name:'resort vacations',         type:'luxury' },
+  { name:'rice',                     type:'necessity' },
+  { name:'toothpaste',               type:'necessity' },
+  { name:'electricity (kWh)',        type:'necessity' },
+  { name:'basic clothing items',     type:'necessity' },
+  { name:'instant ramen packs',      type:'inferior' },
+  { name:'bus passes',               type:'inferior' },
+  { name:'canned soup',              type:'inferior' },
+  { name:'used clothing items',      type:'inferior' },
+];
+const yedTemplates = [
+  (i1,i2,q1,q2,good) => `Average household income rises from $${i1.toLocaleString()} to $${i2.toLocaleString()} per year. Demand for ${good} changes from ${q1} units to ${q2} units per household per year.`,
+  (i1,i2,q1,q2,good) => `When consumer income increases from $${i1.toLocaleString()} to $${i2.toLocaleString()}, purchases of ${good} change from ${q1} to ${q2} per month.`,
+  (i1,i2,q1,q2,good) => `Household income moves from $${i1.toLocaleString()} to $${i2.toLocaleString()} annually. Purchases of ${good} change from ${q1} to ${q2} per household per year.`,
+];
+
+
+/* ═══════════════════════════════════════════════
+   State
+   ═══════════════════════════════════════════════ */
+const state = {
+  ped: { data:{}, score:{a:0,c:0} },
+  pes: { data:{}, score:{a:0,c:0} },
+  xed: { data:{}, score:{a:0,c:0} },
+  yed: { data:{}, score:{a:0,c:0} },
+};
+
+
+/* ═══════════════════════════════════════════════
+   Generate problems
+   ═══════════════════════════════════════════════ */
+function generate(type) {
+  if (type === 'ped') genPED();
+  else if (type === 'pes') genPES();
+  else if (type === 'xed') genXED();
+  else genYED();
+  resetUI(type);
+}
+
+function genPED() {
+  const p1 = rand(2, 20);
+  const pDelta = pick([-1,-2,-3,1,2,3,4,5]);
+  let p2 = p1 + pDelta;
+  if (p2 <= 0) { p2 = p1 + 2; }
+  const q1 = rand(5, 50) * 2;
+  const dir = pDelta > 0 ? -1 : 1;  // law of demand
+  let q2 = q1 + dir * rand(2, Math.max(2, Math.floor(q1 * 0.5)));
+  if (q2 <= 0) q2 = rand(1, q1 - 1);
+  state.ped.data = { p1, p2, q1, q2 };
+  document.getElementById('ped-scenario').textContent = pick(pedScenarios)(p1, p2, q1, q2);
+}
+
+function genPES() {
+  const p1 = rand(2, 80);
+  const p2 = p1 + rand(1, Math.max(1, Math.floor(p1 * 0.4)));
+  const q1 = rand(5, 60) * 2;
+  const q2 = q1 + rand(2, Math.max(2, Math.floor(q1 * 0.5)));
+  state.pes.data = { p1, p2, q1, q2 };
+  document.getElementById('pes-scenario').textContent = pick(pesScenarios)(p1, p2, q1, q2);
+}
+
+function genXED() {
+  const pair = pick(xedPairs);
+  const pB1 = rand(5, 50);
+  const pB2 = pB1 + rand(2, Math.max(2, Math.floor(pB1 * 0.35)));
+  const qA1 = rand(10, 80);
+  let qA2;
+  if (pair.type === 'sub') {
+    qA2 = qA1 + rand(2, Math.max(2, Math.floor(qA1 * 0.5)));
+  } else {
+    qA2 = qA1 - rand(2, Math.max(2, Math.floor(qA1 * 0.4)));
+    if (qA2 <= 0) qA2 = Math.max(1, qA1 - rand(1, 3));
+  }
+  state.xed.data = { pB1, pB2, qA1, qA2, A: pair.A, B: pair.B, rel: pair.type === 'sub' ? 'substitutes' : 'complements' };
+  document.getElementById('xed-scenario').textContent = pick(xedTemplates)(pB1, pB2, qA1, qA2, pair.A, pair.B);
+}
+
+function genYED() {
+  const g = pick(yedGoods);
+  const i1 = rand(3, 8) * 10000;
+  const i2 = i1 + rand(1, 3) * 10000;
+  const q1 = rand(5, 60);
+  let q2;
+  if (g.type === 'luxury') {
+    q2 = q1 + rand(Math.max(1, Math.ceil(q1 * 0.25)), Math.max(2, Math.floor(q1 * 0.8)));
+  } else if (g.type === 'necessity') {
+    q2 = q1 + rand(1, Math.max(1, Math.floor(q1 * 0.15)));
+  } else {
+    q2 = q1 - rand(1, Math.max(1, Math.floor(q1 * 0.3)));
+    if (q2 <= 0) q2 = Math.max(1, q1 - 1);
+  }
+  state.yed.data = { i1, i2, q1, q2, good: g.name, gType: g.type };
+  document.getElementById('yed-scenario').textContent = pick(yedTemplates)(i1, i2, q1, q2, g.name);
+}
+
+
+/* ═══════════════════════════════════════════════
+   Check answers
+   ═══════════════════════════════════════════════ */
+function check(type) {
+  const d = state[type].data;
+  let correctPctQ, correctPctP, correctE, correctCls, labels;
+
+  if (type === 'ped') {
+    correctPctQ = r2(midpointPct(d.q1, d.q2));
+    correctPctP = r2(midpointPct(d.p1, d.p2));
+    correctE = r2(correctPctQ / correctPctP);
+    const absE = Math.abs(correctE);
+    correctCls = absE > 1.005 ? 'elastic' : absE < 0.995 ? 'inelastic' : 'unit';
+    labels = { q: '% ΔQ_D', p: '% ΔP', e: 'Elasticity', c: 'Classification' };
+  }
+  else if (type === 'pes') {
+    correctPctQ = r2(midpointPct(d.q1, d.q2));
+    correctPctP = r2(midpointPct(d.p1, d.p2));
+    correctE = r2(correctPctQ / correctPctP);
+    correctCls = correctE > 1.005 ? 'elastic' : correctE < 0.995 ? 'inelastic' : 'unit';
+    labels = { q: '% ΔQ_S', p: '% ΔP', e: 'Elasticity', c: 'Classification' };
+  }
+  else if (type === 'xed') {
+    correctPctQ = r2(midpointPct(d.qA1, d.qA2));
+    correctPctP = r2(midpointPct(d.pB1, d.pB2));
+    correctE = r2(correctPctQ / correctPctP);
+    correctCls = d.rel;
+    labels = { q: '% ΔQ_A', p: '% ΔP_B', e: 'Cross-Price Elasticity', c: 'Relationship' };
+  }
+  else { // yed
+    correctPctQ = r2(midpointPct(d.q1, d.q2));
+    correctPctP = r2(midpointPct(d.i1, d.i2));
+    correctE = r2(correctPctQ / correctPctP);
+    correctCls = d.gType;
+    labels = { q: '% ΔQ', p: '% ΔIncome', e: 'Income Elasticity', c: 'Classification' };
+  }
+
+  // Read user inputs
+  const pctQId = type + '-pctQ';
+  const pctPId = type === 'yed' ? type + '-pctI' : type + '-pctP';
+  const uQ = parseFloat(document.getElementById(pctQId).value);
+  const uP = parseFloat(document.getElementById(pctPId).value);
+  const uE = parseFloat(document.getElementById(type + '-elast').value);
+  const uC = document.getElementById(type + '-class').value;
+
+  if (isNaN(uQ) || isNaN(uP) || isNaN(uE) || !uC) {
+    alert('Please fill in all four steps before checking.');
+    return;
+  }
+
+  state[type].score.a++;
+  const qOk = close(uQ, correctPctQ, 0.15);
+  const pOk = close(uP, correctPctP, 0.15);
+  const eOk = close(uE, correctE, 0.06);
+  const cOk = uC === correctCls;
+  const allOk = qOk && pOk && eOk && cOk;
+  if (allOk) state[type].score.c++;
+
+  // Feedback
+  const fb = document.getElementById(type + '-feedback');
+  if (allOk) {
+    fb.className = 'feedback correct';
+    fb.innerHTML = '<strong>✓ Correct.</strong> ' + labels.q + ' = ' + correctPctQ + '%, ' + labels.p + ' = ' + correctPctP + '%, ' + labels.e + ' = ' + correctE + ' → ' + correctCls + '.';
+  } else {
+    let errs = [];
+    if (!qOk) errs.push(labels.q + ': you entered ' + uQ + '%, answer is <strong>' + correctPctQ + '%</strong>');
+    if (!pOk) errs.push(labels.p + ': you entered ' + uP + '%, answer is <strong>' + correctPctP + '%</strong>');
+    if (!eOk) errs.push(labels.e + ': you entered ' + uE + ', answer is <strong>' + correctE + '</strong>');
+    if (!cOk) errs.push(labels.c + ': you chose "' + uC + '", answer is <strong>' + correctCls + '</strong>');
+    fb.className = 'feedback wrong';
+    fb.innerHTML = '<strong>✗ Not quite.</strong><br>' + errs.join('<br>');
+  }
+
+  // Interpretation
+  const interp = document.getElementById(type + '-interpret');
+  interp.className = 'interpretation show';
+  interp.innerHTML = getInterpretation(type, correctE, correctCls);
+
+  // Update UI
+  updateScore(type);
+  document.querySelector('#panel-' + type + ' .btn-primary').disabled = true;
+  document.getElementById(type + '-next').style.display = 'inline-block';
+}
+
+
+/* ═══════════════════════════════════════════════
+   Interpretations
+   ═══════════════════════════════════════════════ */
+function getInterpretation(type, e, cls) {
+  if (type === 'ped') {
+    if (cls === 'elastic')    return '<strong>Interpretation:</strong> Demand is <em>elastic</em> (|' + e + '| > 1). Consumers are very responsive to price changes — a small price change leads to a proportionally larger change in quantity demanded. This often happens when close substitutes are available.';
+    if (cls === 'inelastic')  return '<strong>Interpretation:</strong> Demand is <em>inelastic</em> (|' + e + '| < 1). Consumers are not very responsive to price changes — quantity demanded changes proportionally less than price. Typical for necessities or goods with few substitutes.';
+    return '<strong>Interpretation:</strong> Demand is <em>unit-elastic</em> (|' + e + '| ≈ 1). The percentage change in quantity demanded equals the percentage change in price.';
+  }
+  if (type === 'pes') {
+    if (cls === 'elastic')    return '<strong>Interpretation:</strong> Supply is <em>elastic</em> (' + e + ' > 1). Producers can ramp up output significantly when price rises — inputs are readily available and production is flexible.';
+    if (cls === 'inelastic')  return '<strong>Interpretation:</strong> Supply is <em>inelastic</em> (' + e + ' < 1). Producers cannot easily increase output when price rises — inputs may be scarce or production takes time.';
+    return '<strong>Interpretation:</strong> Supply is <em>unit-elastic</em> (' + e + ' ≈ 1). The percentage change in quantity supplied equals the percentage change in price.';
+  }
+  if (type === 'xed') {
+    const d = state.xed.data;
+    if (cls === 'substitutes') return '<strong>Interpretation:</strong> ' + d.A + ' and ' + d.B + ' are <em>substitutes</em> (E = ' + e + ' > 0). When the price of ' + d.B + ' increases, consumers switch to ' + d.A + ', increasing its quantity demanded.';
+    return '<strong>Interpretation:</strong> ' + d.A + ' and ' + d.B + ' are <em>complements</em> (E = ' + e + ' < 0). When the price of ' + d.B + ' increases, demand for ' + d.A + ' falls because the two goods are used together.';
+  }
+  // yed
+  const good = state.yed.data.good;
+  if (cls === 'luxury')    return '<strong>Interpretation:</strong> ' + good + ' is a <em>luxury</em> (normal good, E = ' + e + ' > 1). Demand increases by a larger percentage than income — as people earn more, they buy disproportionately more.';
+  if (cls === 'necessity')  return '<strong>Interpretation:</strong> ' + good + ' is a <em>necessity</em> (normal good, 0 < E = ' + e + ' < 1). Demand increases with income but by a smaller percentage — people already buy roughly what they need.';
+  return '<strong>Interpretation:</strong> ' + good + ' is an <em>inferior good</em> (E = ' + e + ' < 0). As income rises, consumers switch to higher-quality alternatives and buy less of this good.';
+}
+
+
+/* ═══════════════════════════════════════════════
+   UI helpers
+   ═══════════════════════════════════════════════ */
+function resetUI(type) {
+  const panel = document.getElementById('panel-' + type);
+  panel.querySelectorAll('input[type="number"]').forEach(i => i.value = '');
+  panel.querySelectorAll('select.field').forEach(s => s.value = '');
+  document.getElementById(type + '-feedback').className = 'feedback';
+  document.getElementById(type + '-interpret').className = 'interpretation';
+  panel.querySelector('.btn-primary').disabled = false;
+  document.getElementById(type + '-next').style.display = 'none';
+}
+
+function updateScore(type) {
+  const s = state[type].score;
+  document.getElementById(type + '-attempted').textContent = s.a;
+  document.getElementById(type + '-correct').textContent = s.c;
+  document.getElementById(type + '-accuracy').textContent = s.a ? Math.round((s.c / s.a) * 100) + '%' : '—';
+}
+
+/* ── Init ── */
+generate('ped');
+generate('pes');
+generate('xed');
+generate('yed');
+</script>
+</body>
+</html>
