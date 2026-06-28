@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cost &amp; Productivity Schedules — BA 1310</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f1efe8;
+    --text: #1a1a1a;
+    --text-2: #5f5e5a;
+    --text-3: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-2: rgba(0,0,0,0.25);
+    --info-bg: #e6f1fb;
+    --info-text: #0c447c;
+    --info-border: #378add;
+    --correct-bg: #e6f4e7;
+    --correct-text: #2d7a32;
+    --correct-border: rgba(45,122,50,0.35);
+    --wrong-bg: #fdeaea;
+    --wrong-text: #b33a3a;
+    --wrong-border: rgba(179,58,58,0.35);
+    --warn-bg: #fbf2e6;
+    --warn-text: #8a5a17;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .back {
+    font-size: 13px;
+    color: var(--text-3);
+    margin: 0 0 1.5rem;
+  }
+  .back a { color: var(--info-text); text-decoration: none; }
+  .back a:hover { text-decoration: underline; }
+
+  header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .course {
+    font-size: 13px;
+    color: var(--text-3);
+    margin: 0 0 0.25rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: 30px;
+    font-weight: 500;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-2);
+    margin: 0;
+  }
+
+  /* ─── Tabs ─── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 1.75rem;
+  }
+  .tab {
+    background: none;
+    border: none;
+    padding: 10px 16px 12px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text-3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -0.5px;
+    transition: color 0.15s, border-color 0.15s;
+    font-weight: 500;
+  }
+  .tab:hover { color: var(--text-2); }
+  .tab.active {
+    color: var(--info-text);
+    border-bottom-color: var(--info-text);
+    font-weight: 600;
+  }
+
+  /* ─── Score bar ─── */
+  .score {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 12px 18px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 1.25rem;
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .score .stat-label {
+    color: var(--text-3);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    margin-right: 0.4rem;
+  }
+  .score .stat-value { color: var(--text); font-weight: 600; }
+
+  /* ─── Concept card ─── */
+  .concept {
+    background: var(--info-bg);
+    color: var(--info-text);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+  .concept code {
+    background: rgba(0,0,0,0.06);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  .concept strong { font-weight: 600; }
+  .concept ul { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .concept li { margin-bottom: 0.15rem; }
+
+  /* ─── Intro / context card ─── */
+  .intro-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+  .intro-card p { margin: 0 0 0.6rem; }
+  .intro-card p:last-child { margin: 0; }
+  .intro-card strong { color: var(--text); font-weight: 600; }
+  .intro-card em { font-style: italic; }
+
+  /* ─── Scenario card ─── */
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    margin-bottom: 1.25rem;
+  }
+  .card-label {
+    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 500;
+    margin: 0 0 0.75rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .matrix-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+  .matrix-head .card-label { margin: 0; }
+  .param-line {
+    font-size: 13.5px;
+    color: var(--text-2);
+    margin: 0 0 0.9rem;
+  }
+  .param-line strong { color: var(--text); font-weight: 600; }
+
+  .table-wrap { overflow-x: auto; }
+
+  .sched-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 760px;
+  }
+  .sched-table th, .sched-table td {
+    text-align: center;
+    padding: 8px 8px;
+    border-bottom: 0.5px solid var(--border);
+    white-space: nowrap;
+  }
+  .sched-table thead th {
+    font-weight: 500;
+    color: var(--text-3);
+    border-bottom: 0.5px solid var(--border-2);
+    vertical-align: bottom;
+  }
+  .sched-table thead th .col-label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .sched-table thead th .col-formula {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-3);
+    text-transform: none;
+    letter-spacing: 0;
+    margin-top: 2px;
+  }
+  .sched-table thead th.editable .col-label { color: var(--info-text); }
+  .sched-table tbody tr:last-child td { border-bottom: none; }
+  .sched-table td.given { color: var(--text); font-weight: 500; }
+  .sched-table td.q-col { color: var(--text-3); font-weight: 500; }
+
+  .cell-input {
+    width: 84px;
+    background: var(--surface);
+    border: 0.5px solid var(--border-2);
+    border-radius: var(--radius-sm);
+    padding: 6px 7px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--text);
+    text-align: right;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .cell-input:focus {
+    outline: none;
+    border-color: var(--info-text);
+    background: var(--info-bg);
+    color: var(--info-text);
+  }
+  .cell-input:disabled { cursor: default; opacity: 1; }
+  .cell-input.show-correct {
+    border-color: var(--correct-text);
+    background: var(--correct-bg);
+    color: var(--correct-text);
+    font-weight: 600;
+  }
+  .cell-input.show-wrong {
+    border-color: var(--wrong-text);
+    background: var(--wrong-bg);
+    color: var(--wrong-text);
+    font-weight: 600;
+  }
+  .cell-answer {
+    font-size: 10.5px;
+    color: var(--wrong-text);
+    margin-top: 3px;
+    line-height: 1.3;
+  }
+
+  .ppf-note {
+    font-size: 12px;
+    color: var(--text-3);
+    margin: 0.9rem 0 0;
+    line-height: 1.5;
+  }
+  .ppf-note.check-note {
+    margin: -0.5rem 0 1.25rem;
+  }
+
+  /* ─── Per-column stats table ─── */
+  .stats-table th, .stats-table td { white-space: normal; }
+  .stats-table .collabel { font-weight: 500; color: var(--text); text-align: left; }
+  .stats-table .dim { color: var(--text-3); }
+  .stats-table .acc-good { color: var(--correct-text); font-weight: 600; }
+  .stats-table .acc-mid  { color: var(--warn-text); font-weight: 600; }
+  .stats-table .acc-bad  { color: var(--wrong-text); font-weight: 600; }
+
+  /* ─── Action row ─── */
+  .actions-row {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+
+  /* ─── Buttons ─── */
+  .btn {
+    background: var(--info-text);
+    color: #fff;
+    border: 0.5px solid var(--info-text);
+    border-radius: var(--radius-md);
+    padding: 10px 20px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, background 0.15s;
+  }
+  .btn:hover:not(:disabled) { opacity: 0.88; }
+  .btn:disabled {
+    background: var(--surface-2);
+    color: var(--text-3);
+    border-color: var(--border);
+    cursor: not-allowed;
+  }
+  .btn.secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 0.5px solid var(--border-2);
+  }
+  .btn.secondary:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+  .btn.small {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+
+  /* ─── Footer ─── */
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 0.5px solid var(--border);
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  footer a { color: var(--info-text); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ─── Animation ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.3s ease both; }
+
+  /* ─── Dark mode ─── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #2c2c2a;
+      --surface-2: #3a3a38;
+      --text: #f5f5f0;
+      --text-2: #b4b2a9;
+      --text-3: #888780;
+      --border: rgba(255,255,255,0.15);
+      --border-2: rgba(255,255,255,0.3);
+      --info-bg: #0c447c;
+      --info-text: #b5d4f4;
+      --correct-bg: rgba(45,122,50,0.18);
+      --correct-text: #8fd297;
+      --correct-border: rgba(143,210,151,0.35);
+      --wrong-bg: rgba(179,58,58,0.18);
+      --wrong-text: #f0a0a0;
+      --wrong-border: rgba(240,160,160,0.35);
+      --warn-bg: rgba(138,90,23,0.18);
+      --warn-text: #e5c489;
+    }
+    .btn { background: var(--info-text); color: #0c447c; border-color: var(--info-text); }
+  }
+
+  /* ─── Mobile ─── */
+  @media (max-width: 600px) {
+    .container { padding: 2rem 1rem 3rem; }
+    h1 { font-size: 24px; }
+    .tab { padding: 10px 10px 12px; font-size: 13px; }
+    .card { padding: 16px 16px; }
+    .intro-card { padding: 14px 16px; }
+    .cell-input { width: 72px; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <p class="back"><a href="../">← Teaching Tools</a></p>
+
+    <header>
+      <p class="course">BA 1310 · UT Dallas</p>
+      <h1>Cost &amp; Productivity Schedules</h1>
+      <p class="subtitle">Fill in the missing cells — practice computing average and marginal cost, and marginal &amp; average product</p>
+    </header>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="cost" role="tab">Cost Schedule</button>
+      <button class="tab" data-tab="prod" role="tab">Productivity Schedule</button>
+    </div>
+
+    <div class="score" id="score-bar">
+      <div><span class="stat-label">Attempted</span><span class="stat-value" id="s-attempted">0</span></div>
+      <div><span class="stat-label">Correct</span><span class="stat-value" id="s-correct">0</span></div>
+      <div><span class="stat-label">Accuracy</span><span class="stat-value" id="s-accuracy">—</span></div>
+    </div>
+
+    <div id="concept"></div>
+    <div id="content"></div>
+
+    <footer>
+      Part of the <a href="../">BA 1310 teaching tools</a>. Source on <a href="https://github.com/moulimdk/BA1310-UTD">GitHub</a>.
+    </footer>
+  </div>
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   Helpers
+   ──────────────────────────────────────────────────────────────── */
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+
+function fmtMoney(n) {
+  return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+function fmtNum(n) {
+  return n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+function fmt2(n) {
+  return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function escapeHTML(s) {
+  return String(s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+const UNDEFINED_ALIASES = ["undefined", "undef", "n/a", "na", "-", "--", "not defined", "infinity", "inf"];
+
+/* ────────────────────────────────────────────────────────────────
+   Cost schedule generator
+   FC fixed every row. Marginal cost per 10-unit interval follows a
+   U-shape (falls, hits a trough, then rises) — produces realistic
+   AVC/ATC curves with a single minimum.
+   ──────────────────────────────────────────────────────────────── */
+const PRODUCTS_COST = ["bicycles", "backpacks", "candles", "ceramic mugs", "lawn chairs", "board games", "tote bags", "wooden tables"];
+
+function generateCostScenario() {
+  const FC_OPTIONS = [400000, 500000, 600000, 750000, 800000, 1000000, 1200000, 1500000];
+  const fc = FC_OPTIONS[randInt(0, FC_OPTIONS.length - 1)];
+  const product = PRODUCTS_COST[randInt(0, PRODUCTS_COST.length - 1)];
+  const n = 8; // intervals -> Q = 0,10,...,80
+  const valleyIdx = randInt(2, 5);
+  const valleyMC = randInt(6000, 12000);
+  const downStep = randInt(1500, 3000);
+  const upStep = randInt(2500, 6000);
+  const intervalMC = [];
+  for (let i = 0; i < n; i++) {
+    if (i < valleyIdx) intervalMC.push(valleyMC + (valleyIdx - i) * downStep);
+    else if (i === valleyIdx) intervalMC.push(valleyMC);
+    else intervalMC.push(valleyMC + (i - valleyIdx) * upStep);
+  }
+  const rows = [];
+  let vc = 0;
+  for (let i = 0; i <= n; i++) {
+    const q = i * 10;
+    if (i > 0) vc += intervalMC[i - 1] * 10;
+    const tc = fc + vc;
+    const afc = q === 0 ? null : fc / q;
+    const avc = q === 0 ? null : vc / q;
+    const atc = q === 0 ? null : tc / q;
+    const mc = i === 0 ? null : intervalMC[i - 1];
+    rows.push({ q, fc, vc, tc, afc, avc, atc, mc });
+  }
+  return { fc, product, rows };
+}
+
+/* ────────────────────────────────────────────────────────────────
+   Productivity schedule generator
+   MP rises to a peak (increasing returns) then falls (diminishing
+   returns) but always stays positive, so TP keeps rising.
+   ──────────────────────────────────────────────────────────────── */
+const PRODUCTS_PROD = ["pizzas", "loaves of bread", "sandwiches", "haircuts", "bicycles assembled", "smoothies", "t-shirts printed"];
+
+function generateProdScenario() {
+  const wage = randInt(10, 25);
+  const hours = 8;
+  const product = PRODUCTS_PROD[randInt(0, PRODUCTS_PROD.length - 1)];
+  const peakPos = randInt(2, 4);
+  const peakMP = randInt(150, 220);
+  const decrementStep = randInt(15, 30);
+  const mp = {};
+  for (let L = 1; L <= peakPos; L++) {
+    mp[L] = Math.max(10, Math.round((peakMP * L / peakPos) / 5) * 5);
+  }
+  for (let L = peakPos + 1; L <= 10; L++) {
+    const v = peakMP - (L - peakPos) * decrementStep;
+    mp[L] = Math.max(10, Math.round(v / 5) * 5);
+  }
+  const rows = [];
+  let tp = 0;
+  for (let L = 0; L <= 10; L++) {
+    if (L > 0) tp += mp[L];
+    const tc = wage * L * hours;
+    const ap = L === 0 ? null : tp / L;
+    const atc = (L === 0 || tp === 0) ? null : tc / tp;
+    const mcVal = (L === 0) ? null : (wage * hours) / mp[L];
+    rows.push({ L, tp, mp: L === 0 ? null : mp[L], ap, tc, atc, mc: mcVal });
+  }
+  return { wage, hours, product, rows };
+}
+
+/* ────────────────────────────────────────────────────────────────
+   Column definitions per tab
+   Each editable column: key, label, formula, getter(row) -> number|null
+   ──────────────────────────────────────────────────────────────── */
+const COST_COLUMNS = [
+  { key: "afc", label: "Avg. Fixed Cost", formula: "AFC = FC / Q", editable: true,  get: r => r.afc },
+  { key: "avc", label: "Avg. Variable Cost", formula: "AVC = VC / Q", editable: true,  get: r => r.avc },
+  { key: "tc",  label: "Total Cost", formula: "TC = FC + VC", editable: true,  get: r => r.tc },
+  { key: "atc", label: "Avg. Total Cost", formula: "ATC = TC / Q", editable: true,  get: r => r.atc },
+  { key: "mc",  label: "Marginal Cost", formula: "MC = ΔTC / ΔQ", editable: true,  get: r => r.mc },
+];
+
+const PROD_COLUMNS = [
+  { key: "mp",  label: "Marginal Product", formula: "MP = ΔTP / ΔL", editable: true, get: r => r.mp },
+  { key: "ap",  label: "Average Product", formula: "AP = TP / L", editable: true, get: r => r.ap },
+  { key: "tc",  label: "Total Cost", formula: "TC = w × L × hrs", editable: true, get: r => r.tc },
+  { key: "atc", label: "Avg. Total Cost", formula: "ATC = TC / TP", editable: true, get: r => r.atc },
+  { key: "mc",  label: "Marginal Cost", formula: "MC = ΔTC / ΔTP", editable: true, get: r => r.mc },
+];
+
+/* ────────────────────────────────────────────────────────────────
+   State
+   ──────────────────────────────────────────────────────────────── */
+const state = {
+  tab: "cost",
+  cost: { scenario: generateCostScenario(), answers: {}, submitted: {}, correctness: {} },
+  prod: { scenario: generateProdScenario(), answers: {}, submitted: {}, correctness: {} },
+  stats: { cost: {}, prod: {} }, // stats[tab][colKey] = {attempts, correct}
+};
+
+const CONCEPTS = {
+  cost: `<strong>Cost schedule.</strong> Fixed Cost (FC) doesn't change with output. Variable Cost (VC) does.
+    <ul>
+      <li><strong>AFC</strong> = FC / Q &nbsp;·&nbsp; <strong>AVC</strong> = VC / Q &nbsp;·&nbsp; <strong>TC</strong> = FC + VC</li>
+      <li><strong>ATC</strong> = TC / Q = AFC + AVC</li>
+      <li><strong>MC</strong> = ΔTC / ΔQ — the extra cost of producing the next 10 units</li>
+    </ul>
+    AFC, AVC, ATC, and MC are all <strong>undefined</strong> at Q = 0 (you can't divide by zero output). TC is still defined — it just equals FC.`,
+  prod: `<strong>Productivity schedule.</strong> Total Product (TP) is total output for a given amount of labor (L).
+    <ul>
+      <li><strong>MP</strong> = ΔTP / ΔL — the extra output from hiring one more worker</li>
+      <li><strong>AP</strong> = TP / L &nbsp;·&nbsp; <strong>TC</strong> = wage × L × hours</li>
+      <li><strong>ATC</strong> = TC / TP &nbsp;·&nbsp; <strong>MC</strong> = ΔTC / ΔTP = (wage × hours) / MP</li>
+    </ul>
+    MP, AP, ATC, and MC are all <strong>undefined</strong> at L = 0. TC is still defined — it just equals 0.`,
+};
+
+/* ────────────────────────────────────────────────────────────────
+   Checking logic
+   ──────────────────────────────────────────────────────────────── */
+function isUndefinedAnswer(raw) {
+  const v = String(raw).trim().toLowerCase();
+  return UNDEFINED_ALIASES.includes(v);
+}
+
+function parseNumeric(raw) {
+  const cleaned = String(raw).replace(/[$,\s]/g, "");
+  if (cleaned === "" || isNaN(cleaned)) return null;
+  return parseFloat(cleaned);
+}
+
+function checkValue(raw, expected) {
+  if (raw === undefined || raw === null || String(raw).trim() === "") return null; // not provided
+  if (expected === null) {
+    // expected is "Undefined"
+    return isUndefinedAnswer(raw);
+  }
+  const num = parseNumeric(raw);
+  if (num === null) return false;
+  const tol = Math.abs(expected - Math.round(expected)) < 1e-6 ? 0.5 : 0.02;
+  return Math.abs(num - expected) <= tol;
+}
+
+function displayExpected(expected) {
+  if (expected === null) return "Undefined";
+  if (Math.abs(expected - Math.round(expected)) < 1e-6) return fmtNum(Math.round(expected));
+  return fmt2(round2(expected));
+}
+
+/* ────────────────────────────────────────────────────────────────
+   Rendering
+   ──────────────────────────────────────────────────────────────── */
+function tabData() { return state[state.tab]; }
+function columns() { return state.tab === "cost" ? COST_COLUMNS : PROD_COLUMNS; }
+
+function renderConcept() {
+  document.getElementById("concept").innerHTML = `<div class="concept">${CONCEPTS[state.tab]}</div>`;
+}
+
+function renderScore() {
+  const tab = state.tab;
+  const cols = columns();
+  let attempts = 0, correct = 0;
+  cols.forEach(c => {
+    const s = (state.stats[tab][c.key]) || { attempts: 0, correct: 0 };
+    attempts += s.attempts;
+    correct += s.correct;
+  });
+  document.getElementById("s-attempted").textContent = attempts;
+  document.getElementById("s-correct").textContent = correct;
+  document.getElementById("s-accuracy").textContent = attempts === 0 ? "—" : `${Math.round((correct / attempts) * 100)}%`;
+}
+
+function accClass(attempts, correct) {
+  if (!attempts) return "dim";
+  const pct = correct / attempts;
+  if (pct >= 0.8) return "acc-good";
+  if (pct >= 0.5) return "acc-mid";
+  return "acc-bad";
+}
+
+function renderColumnStats() {
+  const tab = state.tab;
+  const cols = columns();
+  const rows = cols.map(c => {
+    const s = state.stats[tab][c.key] || { attempts: 0, correct: 0 };
+    const acc = s.attempts === 0 ? "—" : `${Math.round((s.correct / s.attempts) * 100)}%`;
+    const cls = accClass(s.attempts, s.correct);
+    return `
+      <tr>
+        <td class="collabel">${escapeHTML(c.label)}</td>
+        <td class="${s.attempts === 0 ? "dim" : ""}">${s.attempts}</td>
+        <td class="${s.attempts === 0 ? "dim" : ""}">${s.correct}</td>
+        <td class="${cls}">${acc}</td>
+      </tr>`;
+  }).join("");
+
+  return `
+    <div class="card">
+      <p class="card-label">Per-column performance · this tab</p>
+      <div class="table-wrap">
+        <table class="sched-table stats-table" style="min-width:0;">
+          <thead>
+            <tr>
+              <th style="text-align:left;">Column</th>
+              <th>Attempts</th>
+              <th>Correct</th>
+              <th>Accuracy</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <p class="ppf-note">Tracks every check you've run on this tab, across all problems. Use it to spot which column needs more practice.</p>
+    </div>`;
+}
+
+function renderIntro() {
+  if (state.tab === "cost") {
+    const s = state.cost.scenario;
+    return `
+      <div class="intro-card">
+        <p><strong>The setup.</strong> A firm produces <strong>${escapeHTML(s.product)}</strong>. Quantity (Q) and Fixed Cost (FC) are given below, along with Variable Cost (VC) for each row. Fill in the rest of the table.</p>
+        <p class="ppf-note"><em>Tip: round decimals to 2 places. At Q = 0, AFC, AVC, ATC, and MC are undefined — type "undefined" for those cells.</em></p>
+      </div>`;
+  }
+  const s = state.prod.scenario;
+  return `
+    <div class="intro-card">
+      <p><strong>The setup.</strong> A firm hires workers (L) to produce <strong>${escapeHTML(s.product)}</strong>. Each worker works an ${s.hours}-hour shift and is paid <strong>$${s.wage}/hr</strong>. Labor (L) and Total Product (TP) are given below. Fill in the rest of the table.</p>
+      <p class="ppf-note"><em>Tip: round decimals to 2 places. At L = 0, MP, AP, ATC, and MC are undefined — type "undefined" for those cells.</em></p>
+    </div>`;
+}
+
+function cellId(tab, col, idx) { return `${tab}-${col}-${idx}`; }
+
+function renderTable() {
+  const tab = state.tab;
+  const td = tabData();
+  const cols = columns();
+  const rows = td.scenario.rows;
+
+  const givenHeaders = tab === "cost"
+    ? [`<th><span class="col-label">Q</span></th>`, `<th><span class="col-label">FC</span></th>`, `<th><span class="col-label">VC</span></th>`]
+    : [`<th><span class="col-label">L</span></th>`, `<th><span class="col-label">TP</span></th>`];
+
+  const editableHeaders = cols.map(c => `
+    <th class="editable">
+      <span class="col-label">${escapeHTML(c.label)}</span>
+      <span class="col-formula">${escapeHTML(c.formula)}</span>
+    </th>`).join("");
+
+  const bodyRows = rows.map((r, idx) => {
+    const givenCells = tab === "cost"
+      ? [`<td class="q-col">${r.q}</td>`, `<td class="given">${fmtMoney(r.fc)}</td>`, `<td class="given">${fmtMoney(r.vc)}</td>`]
+      : [`<td class="q-col">${r.L}</td>`, `<td class="given">${fmtNum(r.tp)}</td>`];
+
+    const editableCells = cols.map(c => {
+      const expected = c.get(r);
+      const id = cellId(tab, c.key, idx);
+      const isSubmitted = !!td.submitted[id];
+      const isCorrect = td.correctness[id];
+      const value = td.answers[id] !== undefined ? td.answers[id] : "";
+      const inputClass = ["cell-input"];
+      if (isSubmitted) inputClass.push(isCorrect ? "show-correct" : "show-wrong");
+      const answerHTML = (isSubmitted && !isCorrect)
+        ? `<div class="cell-answer">Ans: ${escapeHTML(displayExpected(expected))}</div>`
+        : "";
+      return `
+        <td>
+          <input
+            type="text"
+            class="${inputClass.join(" ")}"
+            data-cell="${id}"
+            value="${escapeHTML(value)}"
+            placeholder="?"
+            autocomplete="off"
+            ${isSubmitted ? "disabled" : ""}
+          />
+          ${answerHTML}
+        </td>`;
+    }).join("");
+
+    return `<tr>${givenCells.join("")}${editableCells}</tr>`;
+  }).join("");
+
+  const paramLine = tab === "cost"
+    ? `<p class="param-line">Fixed Cost: <strong>${fmtMoney(td.scenario.fc)}</strong> every row · Quantity rises in steps of 10 units</p>`
+    : `<p class="param-line">Wage: <strong>$${td.scenario.wage}/hr</strong> · Shift length: <strong>${td.scenario.hours} hours</strong></p>`;
+
+  return `
+    <div class="card">
+      <div class="matrix-head">
+        <p class="card-label">${tab === "cost" ? "Cost schedule" : "Productivity schedule"} for ${escapeHTML(td.scenario.product)}</p>
+        <button class="btn secondary small" id="btn-new">New problem</button>
+      </div>
+      ${paramLine}
+      <div class="table-wrap">
+        <table class="sched-table" id="sched-main-table">
+          <thead>
+            <tr>${givenHeaders.join("")}${editableHeaders}</tr>
+          </thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function render() {
+  renderConcept();
+  renderScore();
+
+  document.getElementById("content").innerHTML = `
+    ${renderIntro()}
+    ${renderTable()}
+    <div class="actions-row">
+      <button class="btn" id="btn-check">Check table</button>
+    </div>
+    <p class="ppf-note check-note">"Check table" grades whatever you've filled in — fill in just one cell and check it, or fill in several (or all of them) before checking. It only grades cells that have a value; it never clears or resets the table.</p>
+    ${renderColumnStats()}
+  `;
+
+  // Wire up inputs
+  document.querySelectorAll("[data-cell]").forEach(input => {
+    input.addEventListener("input", () => {
+      const id = input.dataset.cell;
+      tabData().answers[id] = input.value;
+    });
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") { e.preventDefault(); handleCheck(); }
+    });
+  });
+
+  document.getElementById("btn-check").addEventListener("click", handleCheck);
+  const newBtn = document.getElementById("btn-new");
+  if (newBtn) newBtn.addEventListener("click", handleNew);
+}
+
+function handleCheck() {
+  const tab = state.tab;
+  const td = tabData();
+  const cols = columns();
+  const rows = td.scenario.rows;
+
+  rows.forEach((r, idx) => {
+    cols.forEach(c => {
+      const id = cellId(tab, c.key, idx);
+      if (td.submitted[id]) return; // already locked
+      const raw = td.answers[id];
+      if (raw === undefined || String(raw).trim() === "") return; // skip empty cells
+
+      const expected = c.get(r);
+      const result = checkValue(raw, expected);
+      if (result === null) return;
+
+      td.submitted[id] = true;
+      td.correctness[id] = result;
+
+      if (!state.stats[tab][c.key]) state.stats[tab][c.key] = { attempts: 0, correct: 0 };
+      state.stats[tab][c.key].attempts += 1;
+      if (result) state.stats[tab][c.key].correct += 1;
+    });
+  });
+
+  render();
+}
+
+function handleNew() {
+  const tab = state.tab;
+  state[tab] = {
+    scenario: tab === "cost" ? generateCostScenario() : generateProdScenario(),
+    answers: {},
+    submitted: {},
+    correctness: {},
+  };
+  render();
+}
+
+function switchTab(t) {
+  if (t === state.tab) return;
+  state.tab = t;
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
+  render();
+}
+
+document.querySelectorAll(".tab").forEach(b => {
+  b.addEventListener("click", () => switchTab(b.dataset.tab));
+});
+
+render();
+</script>
+</body>
+</html>
